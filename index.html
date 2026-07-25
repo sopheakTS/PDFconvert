@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DADING SHOP - A4 Catalog Generator (6 ផលិតផល/ទំព័រ)</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts for Khmer & English -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantenah&family=Koh+Santepheap:wght@400;600;700&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SheetJS for Excel handling -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- Custom CSS for strict A4 Layout and Printing -->
+    <style>
+        body {
+            font-family: 'Noto Sans Khmer', 'Koh Santepheap', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
+
+        /* Screen Preview A4 Canvas */
+        .a4-page {
+            width: 210mm;
+            height: 297mm;
+            padding: 10mm 12mm 10mm 12mm;
+            margin: 0 auto 20px auto;
+            background: white;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            page-break-after: always;
+            break-after: page;
+        }
+
+        /* 2 Column x 3 Row Grid for exactly 6 products */
+        .product-grid-a4 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 12px;
+            flex-grow: 1;
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
+        /* Print Media Styles */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+            body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-container {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+            }
+            .a4-page {
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                max-height: 297mm !important;
+                padding: 10mm 12mm 10mm 12mm !important;
+                page-break-after: always !important;
+                break-after: page !important;
+                overflow: hidden !important;
+            }
+        }
+
+        /* Line clamp for text overflow */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navigation Header -->
+    <header class="no-print bg-slate-900 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center font-bold text-lg text-white shadow-inner">
+                    D
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight tracking-wide">DADING SHOP Catalog</h1>
+                    <p class="text-xs text-slate-400">ប្រព័ន្ធបង្កើត File A4 PDF & Excel (៦ ផលិតផលក្នុង ១ទំព័រ)</p>
+                </div>
+            </div>
+
+            <!-- Google Sheet Sync Status Bar in Header -->
+            <div class="hidden lg:flex items-center bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-300 gap-2">
+                <i class="fa-solid fa-link text-emerald-400"></i>
+                <span class="truncate max-w-xs" id="currentSheetStatusText">Google Sheet Connected</span>
+                <button onclick="importFromGSheetLink()" class="text-xs text-emerald-400 hover:underline font-semibold ml-1">
+                    <i class="fa-solid fa-rotate-right"></i> Refetch
+                </button>
+            </div>
+
+            <!-- Header Quick Actions -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <button onclick="openImportModal()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs md:text-sm px-3 py-2 rounded-lg transition flex items-center gap-2 border border-slate-700">
+                    <i class="fa-solid fa-file-import text-emerald-400"></i>
+                    <span>ភ្ជាប់ Google Sheet / Excel</span>
+                </button>
+                <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs md:text-sm px-3 py-2 rounded-lg font-medium transition flex items-center gap-2 shadow">
+                    <i class="fa-solid fa-file-excel"></i>
+                    <span>ទាញយក Excel</span>
+                </button>
+                <button onclick="triggerPrint()" class="bg-red-600 hover:bg-red-700 text-white text-xs md:text-sm px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2 shadow-lg hover:shadow-red-900/50">
+                    <i class="fa-solid fa-print"></i>
+                    <span>ព្រីន / ទាញយក PDF</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Alert Banner for Feedback Messages -->
+    <div id="alertBanner" class="no-print hidden bg-emerald-600 text-white px-4 py-2 text-center text-xs font-medium shadow-md transition-all">
+        <span id="alertBannerText">ទាញយកទិន្នន័យបានជោគជ័យ!</span>
+    </div>
+
+    <!-- Main Workspace -->
+    <main class="flex-grow flex flex-col md:flex-row max-w-7xl w-full mx-auto p-4 gap-6">
+        
+        <!-- Left Sidebar: Controls & Options -->
+        <aside class="no-print w-full md:w-80 flex-shrink-0 space-y-4">
+            
+            <!-- Quick Google Sheet Link Sync Box -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-3">
+                <h2 class="font-bold text-slate-800 text-xs flex items-center justify-between">
+                    <span class="flex items-center gap-2">
+                        <i class="fa-solid fa-sheet-plastic text-emerald-600"></i>
+                        <span>Google Sheet Link</span>
+                    </span>
+                    <span id="syncSpinner" class="hidden text-emerald-600 animate-spin">
+                        <i class="fa-solid fa-circle-notch"></i>
+                    </span>
+                </h2>
+                <div class="space-y-2">
+                    <input type="text" id="gsheetUrlInputMain" 
+                        value="https://docs.google.com/spreadsheets/d/1iXLoDPlNtwBr-jfIR8Nd73dxarb9kfv5o3r3MCRCqIo/edit?usp=sharing" 
+                        class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none" 
+                        placeholder="Paste Google Sheet URL here...">
+                    <button onclick="syncFromMainInput()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs py-2 rounded-lg font-medium transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-down"></i>
+                        <span>ទាញយកទិន្នន័យពី Sheet ឥឡូវនេះ</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Page Layout Settings Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-4">
+                <h2 class="font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-red-500"></i>
+                    <span>ការកំណត់ទំព័រ A4</span>
+                </h2>
+
+                <!-- Price display option -->
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 block mb-1">ជ្រើសរើសប្រភេទតម្លៃបង្ហាញ៖</label>
+                    <select id="priceTypeSelect" onchange="renderCatalog()" class="w-full text-sm border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-red-500 focus:outline-none">
+                        <option value="both">បង្ហាញទាំងពីរ (Sale Price & VIP Price)</option>
+                        <option value="sale">បង្ហាញតែ តម្លៃលក់ (Sale Price)</option>
+                        <option value="vip">បង្ហាញតែ តម្លៃ VIP (VIP Price)</option>
+                    </select>
+                </div>
+
+                <!-- Custom Header Info for Printed Page -->
+                <div class="space-y-2">
+                    <label class="text-xs font-semibold text-slate-600 block">ព័ត៌មានលើក្បាលទំព័រ A4៖</label>
+                    <input type="text" id="shopTitleInput" value="DADING SHOP (មានលក់ សម្ភារជាង ម៉ូទ័រBESTIR និងសម្ភារបន្ទប់ទឹក)" 
+                        oninput="updateHeaderInfo()" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-1 focus:ring-red-500" placeholder="ឈ្មោះហាង / ក្បាលទំព័រ">
+                    <input type="text" id="shopContactInput" value="ទំនាក់ទំនងបញ្ជាទិញ៖ 012 345 678 / Telegram: @dadingshop" 
+                        oninput="updateHeaderInfo()" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-1 focus:ring-red-500" placeholder="លេខទូរស័ព្ទ / Telegram">
+                </div>
+
+                <!-- View Mode Selector -->
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 block mb-1">ទម្រង់បង្ហាញលើអេក្រង់៖</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="btnViewA4" onclick="setViewMode('a4')" class="py-1.5 text-xs font-medium rounded-lg border border-red-500 bg-red-50 text-red-600 text-center">
+                            <i class="fa-solid fa-file-pdf mr-1"></i> A4 Print View
+                        </button>
+                        <button id="btnViewGrid" onclick="setViewMode('grid')" class="py-1.5 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 text-center hover:bg-slate-50">
+                            <i class="fa-solid fa-grip mr-1"></i> Quick Grid
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter & Selection Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <h2 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-filter text-emerald-500"></i>
+                        <span>តម្រងទិន្នន័យ</span>
+                    </h2>
+                    <span id="selectedCountBadge" class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2 py-0.5 rounded-full">
+                        0 បានជ្រើសរើស
+                    </span>
+                </div>
+
+                <!-- Search Input -->
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                    <input type="text" id="searchInput" oninput="filterProducts()" placeholder="ស្វែងរកឈ្មោះ ឬ លេខកូដ..." 
+                        class="w-full text-xs border border-slate-300 rounded-lg pl-8 pr-3 py-2 focus:ring-2 focus:ring-red-500 focus:outline-none">
+                </div>
+
+                <!-- Category Dropdown -->
+                <div>
+                    <label class="text-xs font-semibold text-slate-600 block mb-1">ប្រភេទទំនិញ (Category):</label>
+                    <select id="categorySelect" onchange="filterProducts()" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-red-500">
+                        <option value="ALL">ទាំងអស់ (All Categories)</option>
+                    </select>
+                </div>
+
+                <!-- Bulk Selection Buttons -->
+                <div class="flex gap-2 pt-1">
+                    <button onclick="selectAll(true)" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs py-1.5 rounded border border-slate-300 font-medium transition">
+                        <i class="fa-regular fa-square-check mr-1"></i> ជ្រើសរើសទាំងអស់
+                    </button>
+                    <button onclick="selectAll(false)" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs py-1.5 rounded border border-slate-300 font-medium transition">
+                        <i class="fa-regular fa-square mr-1"></i> លុបការជ្រើសរើស
+                    </button>
+                </div>
+
+                <!-- Page Count Summary -->
+                <div class="p-3 bg-red-50 border border-red-100 rounded-lg text-xs text-red-800 flex items-center justify-between">
+                    <span>ចំនួនទំព័រ A4 សរុប៖</span>
+                    <span id="pageCountSummary" class="font-bold text-sm">0 ទំព័រ</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center Display Area (A4 Preview Container) -->
+        <section class="flex-grow overflow-auto">
+            
+            <!-- Summary Bar for Print Preview -->
+            <div class="no-print bg-white p-3 rounded-xl border border-slate-200 mb-4 flex items-center justify-between text-xs text-slate-600 flex-wrap gap-2">
+                <div>
+                    <i class="fa-solid fa-circle-info text-blue-500 mr-1"></i>
+                    <span>ទម្រង់ទំព័រ៖ <b>A4 Vertical (210mm x 297mm)</b> | បង្ហាញ៖ <b>៦ ផលិតផល ក្នុង ១ទំព័រ</b></span>
+                </div>
+                <div class="font-medium text-slate-800">
+                    បង្ហាញ <span id="visibleItemsCount" class="text-red-600 font-bold">0</span> ផលិតផល
+                </div>
+            </div>
+
+            <!-- Container where A4 pages will be dynamically rendered -->
+            <div id="catalogContainer" class="print-container">
+                <!-- Pages will be generated here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal for Full Image Zoom Preview -->
+    <div id="imageModal" class="no-print fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4" onclick="closeImageModal()">
+        <div class="relative max-w-2xl w-full max-h-[90vh] flex items-center justify-center">
+            <img id="modalImage" src="" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl border border-slate-700" referrerpolicy="no-referrer">
+            <button onclick="closeImageModal()" class="absolute -top-10 right-0 text-white hover:text-red-400 text-2xl font-bold">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal for Data Import -->
+    <div id="importModal" class="no-print fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100">
+            <div class="bg-slate-900 px-6 py-4 text-white flex items-center justify-between">
+                <h3 class="font-bold text-base flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-down text-emerald-400"></i>
+                    <span>ភ្ជាប់ទិន្នន័យ Google Sheet / Excel</span>
+                </h3>
+                <button onclick="closeImportModal()" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-5 text-xs text-slate-600">
+                <!-- Option 1: Google Sheet Link -->
+                <div class="space-y-2 border-b border-slate-100 pb-4">
+                    <label class="font-bold text-slate-800 text-xs block">ជម្រើសទី ១៖ បញ្ចូល Link Google Sheet (Share Link / Edit Link)</label>
+                    <p class="text-slate-500 text-[11px]">
+                        គ្រាន់តែ Copy Link របស់ Google Sheet (ឧទាហរណ៍៖ <code class="bg-slate-100 px-1 py-0.5 rounded">https://docs.google.com/spreadsheets/d/.../edit</code>) រួច Paste ចូលទីនេះ៖
+                    </p>
+                    <div class="flex gap-2">
+                        <input type="text" id="gsheetUrlInputModal" 
+                            value="https://docs.google.com/spreadsheets/d/1iXLoDPlNtwBr-jfIR8Nd73dxarb9kfv5o3r3MCRCqIo/edit?usp=sharing" 
+                            placeholder="https://docs.google.com/spreadsheets/d/..." 
+                            class="flex-grow border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none">
+                        <button onclick="importFromModalInput()" class="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg transition whitespace-nowrap">
+                            ទាញយក
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Option 2: Upload Excel File -->
+                <div class="space-y-2 border-b border-slate-100 pb-4">
+                    <label class="font-bold text-slate-800 text-xs block">ជម្រើសទី ២៖ Upload File Excel (.xlsx / .csv)</label>
+                    <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" onchange="importFromExcelFile(event)" 
+                        class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+                </div>
+
+                <!-- Option 3: Reset to Default Sample Data -->
+                <div class="flex items-center justify-between pt-1">
+                    <span class="text-slate-500">ប្រើប្រាស់ទិន្នន័យគំរូដើម DADING SHOP៖</span>
+                    <button onclick="loadSampleData(); closeImportModal();" class="text-red-600 hover:text-red-700 font-semibold underline">
+                        ផ្ទុកទិន្នន័យគំរូឡើងវិញ
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 px-6 py-3 flex justify-end">
+                <button onclick="closeImportModal()" class="px-4 py-1.5 bg-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-300 transition">
+                    បិទ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample fallback data in case sheet is unavailable offline
+        const sampleProducts = [
+            { id: "BE610207", name: "ម៉ូទ័រស្វានកាតប្រហោងថ្ម 锂电扳手 (21V / 1000N.M) (6.0Ah)", size: "6 Pcs/ក្បាល", price: 108.00, vipPrice: 85.00, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/r2WkJGb6/BE610207.jpg" },
+            { id: "BE-P3006", name: "ម៉ូទ័រស្វានបាញ់ដែកស្រាលខ្យល់ 气动冲击扳手 (1500N.M)", size: "6 Pcs/ក្បាល", price: 52.00, vipPrice: 48.80, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/b5wgD5W/BE-P3006.jpg" },
+            { id: "BE610206", name: "ម៉ូទ័រស្វានបាញ់ដែក 充电角磨机 (21V / 8600 r/min) (4.0Ah)", size: "6 Pcs/ក្បាល", price: 68.00, vipPrice: 55.50, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/z3xX1Pzg/BE610206.jpg" },
+            { id: "BE610251", name: "ម៉ូទ័រស្វានបាញ់ដែក 充电角磨机 (21V / 8600 r/min) (4.0Ah)", size: "6 Pcs/ក្បាល", price: 58.00, vipPrice: 39.50, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/HLn9329b/BE610251.jpg" },
+            { id: "BE610208", name: "ស្វានអគ្គិសនីប្រហោង 充电轻型电锤 (21V / 2.8J) (6.0Ah)", size: "4 Pcs/ក្បាល", price: 108.00, vipPrice: 90.00, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/jvrdKGQn/BE610208.jpg" },
+            { id: "BE620201", name: "ម៉ូទ័រកាត់ដែក 355mm 切割机专业用 (1010W)", size: "10 Pcs/ក្បាល", price: 24.00, vipPrice: 19.50, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/Cpv96QCW/BE620201.jpg" }
+        ];
+
+        // Global Application State
+        let allProducts = [];
+        let selectedProductIds = new Set();
+        let viewMode = 'a4'; // 'a4' or 'grid'
+
+        // Default user spreadsheet URL provided in query
+        const DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/1iXLoDPlNtwBr-jfIR8Nd73dxarb9kfv5o3r3MCRCqIo/edit?usp=sharing";
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Auto fetch from user's Google Sheet on load
+            importFromGSheetLink(DEFAULT_SHEET_URL);
+        });
+
+        // Convert ANY standard Google Sheet URL into direct CSV export link
+        function getGoogleSheetCsvUrl(rawUrl) {
+            if (!rawUrl) return '';
+            let cleanUrl = rawUrl.trim();
+
+            if (cleanUrl.includes('output=csv') || cleanUrl.endsWith('.csv')) {
+                return cleanUrl;
+            }
+
+            // Extract Google Sheet ID using Regex
+            const match = cleanUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+            if (match && match[1]) {
+                const sheetId = match[1];
+                // Check if specific sheet tab gid is specified
+                const gidMatch = cleanUrl.match(/[?&]gid=([0-9]+)/);
+                const gidParam = gidMatch ? `&gid=${gidMatch[1]}` : '';
+                return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv${gidParam}`;
+            }
+
+            return cleanUrl;
+        }
+
+        // Helper to format/sanitize Image Links (ImgBB, Google Drive, Direct URLs)
+        function sanitizeImageUrl(url) {
+            if (!url) return '';
+            let cleanUrl = String(url).trim().replace(/^['"]|['"]$/g, '');
+            if (!cleanUrl) return '';
+
+            // Handle Google Drive links
+            if (cleanUrl.includes('drive.google.com')) {
+                const idMatch = cleanUrl.match(/\/d\/([a-zA-Z0-9-_]+)/) || cleanUrl.match(/id=([a-zA-Z0-9-_]+)/);
+                if (idMatch && idMatch[1]) {
+                    return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
+                }
+            }
+
+            // Handle missing protocol
+            if (cleanUrl.startsWith('//')) {
+                cleanUrl = 'https:' + cleanUrl;
+            }
+
+            return cleanUrl;
+        }
+
+        // Display status feedback toast
+        function showStatus(message, type = 'info') {
+            const banner = document.getElementById('alertBanner');
+            const text = document.getElementById('alertBannerText');
+            const statusText = document.getElementById('currentSheetStatusText');
+
+            text.innerText = message;
+            if (type === 'error') {
+                banner.className = "no-print bg-red-600 text-white px-4 py-2 text-center text-xs font-medium shadow-md transition-all";
+                if (statusText) statusText.innerText = "ការភ្ជាប់មានបញ្ហា ( offline / link error )";
+            } else if (type === 'success') {
+                banner.className = "no-print bg-emerald-600 text-white px-4 py-2 text-center text-xs font-medium shadow-md transition-all";
+                if (statusText) statusText.innerText = "បានភ្ជាប់ Google Sheet ជោគជ័យ";
+            } else {
+                banner.className = "no-print bg-blue-600 text-white px-4 py-2 text-center text-xs font-medium shadow-md transition-all";
+                if (statusText) statusText.innerText = "កំពុងទាញយកទិន្នន័យ...";
+            }
+
+            banner.classList.remove('hidden');
+            setTimeout(() => {
+                banner.classList.add('hidden');
+            }, 5000);
+        }
+
+        function syncFromMainInput() {
+            const url = document.getElementById('gsheetUrlInputMain').value.trim();
+            importFromGSheetLink(url);
+        }
+
+        function importFromModalInput() {
+            const url = document.getElementById('gsheetUrlInputModal').value.trim();
+            importFromGSheetLink(url);
+            closeImportModal();
+        }
+
+        // Import directly from Google Sheet URL with Fallback Endpoints
+        async function importFromGSheetLink(targetUrl) {
+            const rawUrl = targetUrl || document.getElementById('gsheetUrlInputMain').value.trim();
+            if (!rawUrl) {
+                showStatus('សូមបញ្ចូល Link Google Sheet!', 'error');
+                return;
+            }
+
+            // Keep input values synchronized
+            document.getElementById('gsheetUrlInputMain').value = rawUrl;
+            document.getElementById('gsheetUrlInputModal').value = rawUrl;
+
+            const spinner = document.getElementById('syncSpinner');
+            if (spinner) spinner.classList.remove('hidden');
+
+            const csvUrl = getGoogleSheetCsvUrl(rawUrl);
+            showStatus('កំពុងទាញយកទិន្នន័យពី Google Sheet...', 'info');
+
+            try {
+                let csvText = '';
+                let resp = await fetch(csvUrl);
+
+                if (resp.ok) {
+                    csvText = await resp.text();
+                } else {
+                    // Fallback to gviz tq endpoint if standard export fails
+                    const sheetIdMatch = rawUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+                    if (sheetIdMatch) {
+                        const altUrl = `https://docs.google.com/spreadsheets/d/${sheetIdMatch[1]}/gviz/tq?tqx=out:csv`;
+                        const altResp = await fetch(altUrl);
+                        if (altResp.ok) {
+                            csvText = await altResp.text();
+                        }
+                    }
+                }
+
+                if (csvText && csvText.trim().length > 0) {
+                    parseAndSetCSVData(csvText);
+                    showStatus('ទាញយកទិន្នន័យពី Google Sheet បានជោគជ័យ!', 'success');
+                } else {
+                    throw new Error('ទិន្នន័យទទេ ឬ រកមិនឃើញ');
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+                showStatus('មិនអាចទាញយកទិន្នន័យបានទេ! សូមពិនិត្យមើលថា Link Google Sheet ត្រូវបានបើក "Anyone with the link can view" ហើយឬនៅ?', 'error');
+                // Load sample data if initial load fails
+                if (allProducts.length === 0) {
+                    loadSampleData();
+                }
+            } finally {
+                if (spinner) spinner.classList.add('hidden');
+            }
+        }
+
+        function parseAndSetCSVData(csvText) {
+            const workbook = XLSX.read(csvText, { type: 'string' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const jsonRows = XLSX.utils.sheet_to_json(worksheet);
+            processImportedJSON(jsonRows);
+        }
+
+        // Process imported JSON/Sheet data with intelligent column mapping
+        function processImportedJSON(rows) {
+            if (!rows || rows.length === 0) {
+                showStatus('គ្មានទិន្នន័យក្នុង Sheet នេះទេ!', 'error');
+                return;
+            }
+
+            const mapped = rows.map((r, i) => {
+                const keys = Object.keys(r);
+
+                // Helper to find column key by keywords
+                const findKey = (keywords) => {
+                    return keys.find(k => {
+                        const cleanKey = String(k).toLowerCase().trim().replace(/[^a-z0-9ខ្មែរ]/g, '');
+                        return keywords.some(kw => cleanKey.includes(kw.toLowerCase()));
+                    });
+                };
+
+                const nameKey = findKey(['name', 'ឈ្មោះ', 'title', 'product']) || keys[0];
+                const codeKey = findKey(['code', 'id', 'sku', 'លេខកូដ']) || keys[1];
+                const sizeKey = findKey(['variant', 'size', 'ទំហំ', 'spec']) || keys[2];
+                const priceKey = findKey(['saleprice', 'sale price', 'price', 'តម្លៃលក់', 'តម្លៃ']) || keys[3];
+                const vipKey = findKey(['vipprice', 'vip price', 'vip', 'តម្លៃvip']) || keys[4];
+                const categoryKey = findKey(['category', 'ប្រភេទទំនិញ', 'ប្រភេទ']) || keys[5];
+                const photoKey = findKey(['linkphoto', 'photo', 'image', 'img', 'picture', 'រូបភាព']) || keys.find(k => String(r[k]).startsWith('http'));
+
+                const cleanPrice = (val) => {
+                    if (typeof val === 'number') return val;
+                    if (!val) return 0;
+                    return parseFloat(String(val).replace(/[^0-9.]/g, '')) || 0;
+                };
+
+                const rawPhoto = photoKey ? String(r[photoKey] || '') : '';
+
+                return {
+                    id: String(r[codeKey] || `PROD-${i+1}`).trim(),
+                    name: String(r[nameKey] || 'គ្មានឈ្មោះ').trim(),
+                    size: String(r[sizeKey] || '').trim(),
+                    price: cleanPrice(r[priceKey]),
+                    vipPrice: cleanPrice(r[vipKey]),
+                    category: String(r[categoryKey] || 'ផ្សេងៗ').trim(),
+                    photo: sanitizeImageUrl(rawPhoto)
+                };
+            }).filter(p => p.name !== 'គ្មានឈ្មោះ' || p.id.startsWith('PROD-') === false);
+
+            allProducts = mapped;
+            selectedProductIds = new Set(allProducts.map(p => p.id));
+            populateCategories();
+            renderCatalog();
+        }
+
+        function loadSampleData() {
+            allProducts = JSON.parse(JSON.stringify(sampleProducts));
+            selectedProductIds = new Set(allProducts.map(p => p.id));
+            populateCategories();
+            renderCatalog();
+        }
+
+        // Populate Category Dropdown options dynamically
+        function populateCategories() {
+            const catSelect = document.getElementById('categorySelect');
+            const categories = ['ALL', ...new Set(allProducts.map(p => p.category).filter(Boolean))];
+            
+            catSelect.innerHTML = categories.map(cat => 
+                `<option value="${cat}">${cat === 'ALL' ? 'ទាំងអស់ (All Categories)' : cat}</option>`
+            ).join('');
+        }
+
+        function getFilteredProducts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const selectedCat = document.getElementById('categorySelect').value;
+
+            return allProducts.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(searchTerm) || 
+                                     p.id.toLowerCase().includes(searchTerm) ||
+                                     (p.category && p.category.toLowerCase().includes(searchTerm));
+                const matchesCat = selectedCat === 'ALL' || p.category === selectedCat;
+                return matchesSearch && matchesCat;
+            });
+        }
+
+        function filterProducts() {
+            renderCatalog();
+        }
+
+        function toggleSelectProduct(productId) {
+            if (selectedProductIds.has(productId)) {
+                selectedProductIds.delete(productId);
+            } else {
+                selectedProductIds.add(productId);
+            }
+            updateBadgeCounts();
+        }
+
+        function selectAll(shouldSelect) {
+            const filtered = getFilteredProducts();
+            filtered.forEach(p => {
+                if (shouldSelect) {
+                    selectedProductIds.add(p.id);
+                } else {
+                    selectedProductIds.delete(p.id);
+                }
+            });
+            renderCatalog();
+        }
+
+        function updateBadgeCounts() {
+            const count = selectedProductIds.size;
+            document.getElementById('selectedCountBadge').innerText = `${count} បានជ្រើសរើស`;
+            
+            // Calculate total A4 pages needed (strictly 6 items per page)
+            const totalPages = Math.ceil(count / 6);
+            document.getElementById('pageCountSummary').innerText = `${totalPages} ទំព័រ A4`;
+        }
+
+        // Main function to render A4 pages with EXACTLY 6 products per page
+        function renderCatalog() {
+            const container = document.getElementById('catalogContainer');
+            container.innerHTML = '';
+
+            const filtered = getFilteredProducts();
+            const selectedList = filtered.filter(p => selectedProductIds.has(p.id));
+
+            document.getElementById('visibleItemsCount').innerText = selectedList.length;
+            updateBadgeCounts();
+
+            if (selectedList.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-xl p-12 text-center text-slate-400 my-8 shadow-sm border border-slate-200">
+                        <i class="fa-solid fa-box-open text-5xl mb-3 text-slate-300"></i>
+                        <p class="font-medium text-sm">មិនទាន់មានផលិតផលត្រូវបានជ្រើសរើសសម្រាប់បង្កើត PDF ទេ។</p>
+                        <p class="text-xs text-slate-400 mt-1">សូមជ្រើសរើសផលិតផលឡើងវិញ ឬ ស្វែងរកតាមឈ្មោះ/លេខកូដ។</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const priceType = document.getElementById('priceTypeSelect').value;
+            const shopTitle = document.getElementById('shopTitleInput').value;
+            const shopContact = document.getElementById('shopContactInput').value;
+
+            // Chunk array into groups of EXACTLY 6 items per page
+            const chunkSize = 6;
+            const totalPages = Math.ceil(selectedList.length / chunkSize);
+
+            for (let pageIdx = 0; pageIdx < totalPages; pageIdx++) {
+                const pageItems = selectedList.slice(pageIdx * chunkSize, (pageIdx + 1) * chunkSize);
+                
+                const pageEl = document.createElement('div');
+                pageEl.className = 'a4-page';
+
+                pageEl.innerHTML = `
+                    <!-- Printable Header -->
+                    <div class="border-b-2 border-red-600 pb-2 mb-1 flex justify-between items-end">
+                        <div>
+                            <h1 class="font-bold text-red-600 text-base md:text-lg leading-tight uppercase tracking-tight">${escapeHtml(shopTitle)}</h1>
+                            <p class="text-[11px] text-slate-600">${escapeHtml(shopContact)}</p>
+                        </div>
+                        <div class="text-right text-[11px] text-slate-400 font-medium">
+                            ទំព័រទី ${pageIdx + 1} នៃ ${totalPages}
+                        </div>
+                    </div>
+
+                    <!-- 2 Column x 3 Row Grid for 6 Products -->
+                    <div class="product-grid-a4">
+                        ${pageItems.map(p => renderProductCard(p, priceType)).join('')}
+                    </div>
+
+                    <!-- Printable Footer -->
+                    <div class="border-t border-slate-200 pt-2 mt-1 flex justify-between items-center text-[10px] text-slate-400">
+                        <span>DADING SHOP Product Catalog System • A4 Print Ready</span>
+                        <span>ថ្ងៃបោះពុម្ព៖ ${new Date().toLocaleDateString('km-KH')}</span>
+                    </div>
+                `;
+
+                container.appendChild(pageEl);
+            }
+        }
+
+        // Render individual Product Card inside A4 Grid
+        function renderProductCard(p, priceType) {
+            let priceDisplay = '';
+            const salePriceVal = p.price ? `$${p.price.toFixed(2)}` : '$0.00';
+            const vipPriceVal = p.vipPrice ? `$${p.vipPrice.toFixed(2)}` : salePriceVal;
+
+            if (priceType === 'sale') {
+                priceDisplay = `<span class="text-red-600 font-bold text-sm">${salePriceVal}</span>`;
+            } else if (priceType === 'vip') {
+                priceDisplay = `<span class="text-emerald-700 font-bold text-sm">${vipPriceVal}</span> <span class="text-[10px] text-emerald-600 font-semibold">(VIP)</span>`;
+            } else {
+                priceDisplay = `
+                    <div class="flex flex-col items-end">
+                        <span class="text-slate-400 text-[10px] line-through">${salePriceVal}</span>
+                        <span class="text-red-600 font-bold text-sm">${vipPriceVal} <span class="text-[9px] text-emerald-600 font-bold">(VIP)</span></span>
+                    </div>
+                `;
+            }
+
+            const imageUrl = p.photo || 'https://placehold.co/400x350/ffffff/e2e8f0?text=No+Photo';
+
+            return `
+                <div class="border border-slate-200 rounded-lg p-2 bg-white flex flex-col justify-between shadow-sm relative group overflow-hidden">
+                    <!-- Top ID & Checkbox -->
+                    <div class="flex justify-between items-start mb-1 gap-1">
+                        <span class="bg-slate-100 text-slate-700 font-mono font-bold text-[10px] px-1.5 py-0.5 rounded border border-slate-200">
+                            ID: ${escapeHtml(p.id)}
+                        </span>
+                        <div class="no-print">
+                            <input type="checkbox" checked onchange="toggleSelectProduct('${p.id}')" 
+                                class="w-4 h-4 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer">
+                        </div>
+                    </div>
+
+                    <!-- Product Image with referrerpolicy="no-referrer" to prevent blocking -->
+                    <div class="w-full h-36 bg-slate-50 rounded flex items-center justify-center overflow-hidden mb-1.5 border border-slate-100 relative cursor-pointer"
+                         onclick="openImageModal('${escapeHtml(imageUrl)}')">
+                        <img src="${escapeHtml(imageUrl)}" 
+                             alt="${escapeHtml(p.name)}" 
+                             referrerpolicy="no-referrer"
+                             loading="lazy"
+                             class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                             onerror="this.onerror=null; this.src='https://placehold.co/400x350/ffffff/e2e8f0?text=Image+Error';">
+                    </div>
+
+                    <!-- Product Information -->
+                    <div class="flex-grow flex flex-col justify-between space-y-1">
+                        <h3 class="font-bold text-slate-800 text-xs leading-snug line-clamp-2 h-8">
+                            ${escapeHtml(p.name)}
+                        </h3>
+                        
+                        <div class="flex justify-between items-end pt-1 border-t border-slate-100">
+                            <div>
+                                <span class="text-[10px] text-slate-500 block">${escapeHtml(p.size || '1 Pcs')}</span>
+                                ${p.category ? `<span class="text-[9px] text-slate-400 block truncate max-w-[110px]">${escapeHtml(p.category)}</span>` : ''}
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[9px] text-slate-400 block">តម្លៃ / Price:</span>
+                                ${priceDisplay}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function openImageModal(imgSrc) {
+            document.getElementById('modalImage').src = imgSrc;
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.add('hidden');
+        }
+
+        function updateHeaderInfo() {
+            renderCatalog();
+        }
+
+        function setViewMode(mode) {
+            viewMode = mode;
+            const btnA4 = document.getElementById('btnViewA4');
+            const btnGrid = document.getElementById('btnViewGrid');
+            const container = document.getElementById('catalogContainer');
+
+            if (mode === 'grid') {
+                btnGrid.className = "py-1.5 text-xs font-medium rounded-lg border border-red-500 bg-red-50 text-red-600 text-center";
+                btnA4.className = "py-1.5 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 text-center hover:bg-slate-50";
+                container.classList.remove('print-container');
+                container.classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'md:grid-cols-3', 'gap-4');
+            } else {
+                btnA4.className = "py-1.5 text-xs font-medium rounded-lg border border-red-500 bg-red-50 text-red-600 text-center";
+                btnGrid.className = "py-1.5 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 text-center hover:bg-slate-50";
+                container.className = "print-container";
+            }
+            renderCatalog();
+        }
+
+        // Trigger Browser Native Print (Save as PDF)
+        function triggerPrint() {
+            setViewMode('a4');
+            setTimeout(() => {
+                window.print();
+            }, 300);
+        }
+
+        // Export Selected Data to Excel (.xlsx) using SheetJS
+        function exportToExcel() {
+            const filtered = getFilteredProducts();
+            const selectedList = filtered.filter(p => selectedProductIds.has(p.id));
+
+            if (selectedList.length === 0) {
+                alert('សូមជ្រើសរើសយ៉ាងហោចណាស់ ១ ផលិតផលដើម្បីទាញយកជា Excel!');
+                return;
+            }
+
+            const excelData = selectedList.map((p, idx) => ({
+                'No': idx + 1,
+                'CODE / ID': p.id,
+                'PRODUCT NAME': p.name,
+                'VARIANT / SIZE': p.size || '',
+                'SALE PRICE ($)': p.price,
+                'VIP PRICE ($)': p.vipPrice || p.price,
+                'CATEGORY': p.category || '',
+                'IMAGE LINK': p.photo || ''
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "DADING_Catalog");
+
+            XLSX.writeFile(workbook, `DADING_SHOP_Catalog_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        function openImportModal() {
+            document.getElementById('importModal').classList.remove('hidden');
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').classList.add('hidden');
+        }
+
+        // Local Excel file upload handler
+        function importFromExcelFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const jsonRows = XLSX.utils.sheet_to_json(worksheet);
+
+                if (jsonRows.length > 0) {
+                    processImportedJSON(jsonRows);
+                    closeImportModal();
+                    showStatus('បាននាំចូល File Excel ដោយជោគជ័យ!', 'success');
+                } else {
+                    showStatus('File នេះគ្មានទិន្នន័យទេ!', 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Utility HTML Escaper
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
