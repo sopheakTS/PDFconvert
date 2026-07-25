@@ -27,11 +27,12 @@
             color: #1e293b;
         }
 
-        /* Screen Preview A4 Canvas */
+        /* Screen & Print Strict A4 Canvas Container */
         .a4-page {
             width: 210mm;
             height: 297mm;
-            padding: 10mm 12mm 10mm 12mm;
+            max-height: 297mm;
+            padding: 8mm 10mm 8mm 10mm;
             margin: 0 auto 20px auto;
             background: white;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
@@ -42,20 +43,75 @@
             justify-content: space-between;
             page-break-after: always;
             break-after: page;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            overflow: hidden;
         }
 
-        /* 2 Column x 3 Row Grid for exactly 6 products */
+        /* 2 Column x 3 Row Grid for EXACTLY 6 products fitting 100% within 297mm height */
         .product-grid-a4 {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            gap: 12px;
-            flex-grow: 1;
-            margin-top: 8px;
-            margin-bottom: 8px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-rows: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            flex: 1 1 0px;
+            min-height: 0;
+            margin-top: 4px;
+            margin-bottom: 4px;
+            overflow: hidden;
         }
 
-        /* Print Media Styles */
+        /* Product Card Styling */
+        .product-card-a4 {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            height: 100%;
+            min-height: 0;
+            box-sizing: border-box;
+            overflow: hidden;
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Maximized Image Container */
+        .product-image-box {
+            width: 100%;
+            flex: 1 1 0px;
+            min-height: 0; /* Crucial: allows image to shrink/expand within grid row height constraint */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            border-radius: 0.375rem;
+            border: 1px solid #f1f5f9;
+            padding: 4px;
+            overflow: hidden;
+            margin-top: 2px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .product-image-box img {
+            max-height: 100%;
+            max-width: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            transition: transform 0.2s ease;
+        }
+
+        .product-image-box:hover img {
+            transform: scale(1.03);
+        }
+
+        /* Print Media CSS Overrides */
         @media print {
             @page {
                 size: A4 portrait;
@@ -80,14 +136,32 @@
                 width: 210mm !important;
                 height: 297mm !important;
                 max-height: 297mm !important;
-                padding: 10mm 12mm 10mm 12mm !important;
+                padding: 8mm 10mm 8mm 10mm !important;
                 page-break-after: always !important;
                 break-after: page !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
                 overflow: hidden !important;
             }
         }
 
-        /* Line clamp for text overflow */
+        /* Custom Scrollbar for sidebar list */
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Text truncation helper */
         .line-clamp-2 {
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -146,7 +220,7 @@
     <!-- Main Workspace -->
     <main class="flex-grow flex flex-col md:flex-row max-w-7xl w-full mx-auto p-4 gap-6">
         
-        <!-- Left Sidebar: Controls & Options -->
+        <!-- Left Sidebar: Controls & Multi-Category Selector -->
         <aside class="no-print w-full md:w-80 flex-shrink-0 space-y-4">
             
             <!-- Quick Google Sheet Link Sync Box -->
@@ -172,17 +246,46 @@
                 </div>
             </div>
 
-            <!-- Page Layout Settings Card -->
+            <!-- Category Checkbox Selection Box ( New Feature ) -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <h2 class="font-bold text-slate-800 text-xs flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-red-500"></i>
+                        <span>ជ្រើសរើសប្រភេទ (Category)</span>
+                    </h2>
+                    <span id="catSelectedCountBadge" class="bg-red-50 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full border border-red-100">
+                        0/0
+                    </span>
+                </div>
+
+                <!-- Quick Category Checkbox Controls -->
+                <div class="flex items-center justify-between text-[11px]">
+                    <button onclick="toggleAllCategories(true)" class="text-red-600 font-medium hover:underline">
+                        <i class="fa-regular fa-square-check mr-1"></i> ធីកទាំងអស់
+                    </button>
+                    <span class="text-slate-300">|</span>
+                    <button onclick="toggleAllCategories(false)" class="text-slate-500 font-medium hover:underline">
+                        <i class="fa-regular fa-square mr-1"></i> ដកចេញទាំងអស់
+                    </button>
+                </div>
+
+                <!-- Dynamic Category Checkbox List -->
+                <div id="categoryCheckboxContainer" class="space-y-1.5 max-h-52 overflow-y-auto custom-scroll pr-1 pt-1">
+                    <!-- Checkboxes will be populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Page Layout & Price Settings Card -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-4">
-                <h2 class="font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-sliders text-red-500"></i>
-                    <span>ការកំណត់ទំព័រ A4</span>
+                <h2 class="font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2 text-xs">
+                    <i class="fa-solid fa-sliders text-blue-500"></i>
+                    <span>ការកំណត់ទំព័រ A4 & តម្លៃ</span>
                 </h2>
 
                 <!-- Price display option -->
                 <div>
                     <label class="text-xs font-semibold text-slate-600 block mb-1">ជ្រើសរើសប្រភេទតម្លៃបង្ហាញ៖</label>
-                    <select id="priceTypeSelect" onchange="renderCatalog()" class="w-full text-sm border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-red-500 focus:outline-none">
+                    <select id="priceTypeSelect" onchange="renderCatalog()" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-red-500 focus:outline-none">
                         <option value="both">បង្ហាញទាំងពីរ (Sale Price & VIP Price)</option>
                         <option value="sale">បង្ហាញតែ តម្លៃលក់ (Sale Price)</option>
                         <option value="vip">បង្ហាញតែ តម្លៃ VIP (VIP Price)</option>
@@ -212,12 +315,12 @@
                 </div>
             </div>
 
-            <!-- Filter & Selection Card -->
+            <!-- Product Search & Selection Summary Card -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-3">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                    <h2 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <h2 class="font-bold text-slate-800 text-xs flex items-center gap-2">
                         <i class="fa-solid fa-filter text-emerald-500"></i>
-                        <span>តម្រងទិន្នន័យ</span>
+                        <span>ស្វែងរក និងជ្រើសរើស</span>
                     </h2>
                     <span id="selectedCountBadge" class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2 py-0.5 rounded-full">
                         0 បានជ្រើសរើស
@@ -231,15 +334,7 @@
                         class="w-full text-xs border border-slate-300 rounded-lg pl-8 pr-3 py-2 focus:ring-2 focus:ring-red-500 focus:outline-none">
                 </div>
 
-                <!-- Category Dropdown -->
-                <div>
-                    <label class="text-xs font-semibold text-slate-600 block mb-1">ប្រភេទទំនិញ (Category):</label>
-                    <select id="categorySelect" onchange="filterProducts()" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-red-500">
-                        <option value="ALL">ទាំងអស់ (All Categories)</option>
-                    </select>
-                </div>
-
-                <!-- Bulk Selection Buttons -->
+                <!-- Bulk Selection Buttons for Visible Products -->
                 <div class="flex gap-2 pt-1">
                     <button onclick="selectAll(true)" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs py-1.5 rounded border border-slate-300 font-medium transition">
                         <i class="fa-regular fa-square-check mr-1"></i> ជ្រើសរើសទាំងអស់
@@ -344,7 +439,7 @@
     </div>
 
     <script>
-        // Sample fallback data in case sheet is unavailable offline
+        // Sample fallback data
         const sampleProducts = [
             { id: "BE610207", name: "ម៉ូទ័រស្វានកាតប្រហោងថ្ម 锂电扳手 (21V / 1000N.M) (6.0Ah)", size: "6 Pcs/ក្បាល", price: 108.00, vipPrice: 85.00, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/r2WkJGb6/BE610207.jpg" },
             { id: "BE-P3006", name: "ម៉ូទ័រស្វានបាញ់ដែកស្រាលខ្យល់ 气动冲击扳手 (1500N.M)", size: "6 Pcs/ក្បាល", price: 52.00, vipPrice: 48.80, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/b5wgD5W/BE-P3006.jpg" },
@@ -354,20 +449,19 @@
             { id: "BE620201", name: "ម៉ូទ័រកាត់ដែក 355mm 切割机专业用 (1010W)", size: "10 Pcs/ក្បាល", price: 24.00, vipPrice: 19.50, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/Cpv96QCW/BE620201.jpg" }
         ];
 
-        // Global Application State
+        // Global State
         let allProducts = [];
         let selectedProductIds = new Set();
-        let viewMode = 'a4'; // 'a4' or 'grid'
+        let selectedCategories = new Set();
+        let viewMode = 'a4';
 
-        // Default user spreadsheet URL provided in query
         const DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/1iXLoDPlNtwBr-jfIR8Nd73dxarb9kfv5o3r3MCRCqIo/edit?usp=sharing";
 
         window.addEventListener('DOMContentLoaded', () => {
-            // Auto fetch from user's Google Sheet on load
             importFromGSheetLink(DEFAULT_SHEET_URL);
         });
 
-        // Convert ANY standard Google Sheet URL into direct CSV export link
+        // Convert Google Sheet URL to direct CSV link
         function getGoogleSheetCsvUrl(rawUrl) {
             if (!rawUrl) return '';
             let cleanUrl = rawUrl.trim();
@@ -376,11 +470,9 @@
                 return cleanUrl;
             }
 
-            // Extract Google Sheet ID using Regex
             const match = cleanUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
             if (match && match[1]) {
                 const sheetId = match[1];
-                // Check if specific sheet tab gid is specified
                 const gidMatch = cleanUrl.match(/[?&]gid=([0-9]+)/);
                 const gidParam = gidMatch ? `&gid=${gidMatch[1]}` : '';
                 return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv${gidParam}`;
@@ -389,13 +481,12 @@
             return cleanUrl;
         }
 
-        // Helper to format/sanitize Image Links (ImgBB, Google Drive, Direct URLs)
+        // Sanitize and support direct Google Drive / ImgBB image links
         function sanitizeImageUrl(url) {
             if (!url) return '';
             let cleanUrl = String(url).trim().replace(/^['"]|['"]$/g, '');
             if (!cleanUrl) return '';
 
-            // Handle Google Drive links
             if (cleanUrl.includes('drive.google.com')) {
                 const idMatch = cleanUrl.match(/\/d\/([a-zA-Z0-9-_]+)/) || cleanUrl.match(/id=([a-zA-Z0-9-_]+)/);
                 if (idMatch && idMatch[1]) {
@@ -403,7 +494,6 @@
                 }
             }
 
-            // Handle missing protocol
             if (cleanUrl.startsWith('//')) {
                 cleanUrl = 'https:' + cleanUrl;
             }
@@ -411,7 +501,7 @@
             return cleanUrl;
         }
 
-        // Display status feedback toast
+        // Toast status banner
         function showStatus(message, type = 'info') {
             const banner = document.getElementById('alertBanner');
             const text = document.getElementById('alertBannerText');
@@ -420,7 +510,7 @@
             text.innerText = message;
             if (type === 'error') {
                 banner.className = "no-print bg-red-600 text-white px-4 py-2 text-center text-xs font-medium shadow-md transition-all";
-                if (statusText) statusText.innerText = "ការភ្ជាប់មានបញ្ហា ( offline / link error )";
+                if (statusText) statusText.innerText = "ការភ្ជាប់មានបញ្ហា ( Offline )";
             } else if (type === 'success') {
                 banner.className = "no-print bg-emerald-600 text-white px-4 py-2 text-center text-xs font-medium shadow-md transition-all";
                 if (statusText) statusText.innerText = "បានភ្ជាប់ Google Sheet ជោគជ័យ";
@@ -432,7 +522,7 @@
             banner.classList.remove('hidden');
             setTimeout(() => {
                 banner.classList.add('hidden');
-            }, 5000);
+            }, 4000);
         }
 
         function syncFromMainInput() {
@@ -446,7 +536,7 @@
             closeImportModal();
         }
 
-        // Import directly from Google Sheet URL with Fallback Endpoints
+        // Fetch data from Google Sheet
         async function importFromGSheetLink(targetUrl) {
             const rawUrl = targetUrl || document.getElementById('gsheetUrlInputMain').value.trim();
             if (!rawUrl) {
@@ -454,7 +544,6 @@
                 return;
             }
 
-            // Keep input values synchronized
             document.getElementById('gsheetUrlInputMain').value = rawUrl;
             document.getElementById('gsheetUrlInputModal').value = rawUrl;
 
@@ -471,7 +560,6 @@
                 if (resp.ok) {
                     csvText = await resp.text();
                 } else {
-                    // Fallback to gviz tq endpoint if standard export fails
                     const sheetIdMatch = rawUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
                     if (sheetIdMatch) {
                         const altUrl = `https://docs.google.com/spreadsheets/d/${sheetIdMatch[1]}/gviz/tq?tqx=out:csv`;
@@ -486,12 +574,11 @@
                     parseAndSetCSVData(csvText);
                     showStatus('ទាញយកទិន្នន័យពី Google Sheet បានជោគជ័យ!', 'success');
                 } else {
-                    throw new Error('ទិន្នន័យទទេ ឬ រកមិនឃើញ');
+                    throw new Error('ទិន្នន័យទទេ');
                 }
             } catch (err) {
                 console.error('Fetch error:', err);
-                showStatus('មិនអាចទាញយកទិន្នន័យបានទេ! សូមពិនិត្យមើលថា Link Google Sheet ត្រូវបានបើក "Anyone with the link can view" ហើយឬនៅ?', 'error');
-                // Load sample data if initial load fails
+                showStatus('មិនអាចទាញយកទិន្នន័យបានទេ! សូមពិនិត្យមើល Link Google Sheet', 'error');
                 if (allProducts.length === 0) {
                     loadSampleData();
                 }
@@ -508,7 +595,7 @@
             processImportedJSON(jsonRows);
         }
 
-        // Process imported JSON/Sheet data with intelligent column mapping
+        // Process JSON data and map spreadsheet columns
         function processImportedJSON(rows) {
             if (!rows || rows.length === 0) {
                 showStatus('គ្មានទិន្នន័យក្នុង Sheet នេះទេ!', 'error');
@@ -518,7 +605,6 @@
             const mapped = rows.map((r, i) => {
                 const keys = Object.keys(r);
 
-                // Helper to find column key by keywords
                 const findKey = (keywords) => {
                     return keys.find(k => {
                         const cleanKey = String(k).toLowerCase().trim().replace(/[^a-z0-9ខ្មែរ]/g, '');
@@ -555,6 +641,8 @@
 
             allProducts = mapped;
             selectedProductIds = new Set(allProducts.map(p => p.id));
+            
+            // Populate Category checkboxes & select all by default
             populateCategories();
             renderCatalog();
         }
@@ -566,25 +654,79 @@
             renderCatalog();
         }
 
-        // Populate Category Dropdown options dynamically
+        // Populate Category Checkbox UI
         function populateCategories() {
-            const catSelect = document.getElementById('categorySelect');
-            const categories = ['ALL', ...new Set(allProducts.map(p => p.category).filter(Boolean))];
+            const container = document.getElementById('categoryCheckboxContainer');
+            const categories = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
             
-            catSelect.innerHTML = categories.map(cat => 
-                `<option value="${cat}">${cat === 'ALL' ? 'ទាំងអស់ (All Categories)' : cat}</option>`
-            ).join('');
+            // Default select all categories
+            selectedCategories = new Set(categories);
+
+            if (categories.length === 0) {
+                container.innerHTML = `<div class="text-xs text-slate-400 p-2">គ្មាន Category ទេ</div>`;
+                updateCategoryBadge();
+                return;
+            }
+
+            container.innerHTML = categories.map((cat, idx) => {
+                const count = allProducts.filter(p => p.category === cat).length;
+                return `
+                    <label class="flex items-center justify-between text-xs p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer border border-transparent hover:border-slate-200 transition">
+                        <div class="flex items-center gap-2 truncate">
+                            <input type="checkbox" checked value="${escapeHtml(cat)}" onchange="onCategoryCheckboxChange(this)"
+                                class="category-checkbox w-4 h-4 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer">
+                            <span class="truncate font-medium text-slate-700">${escapeHtml(cat)}</span>
+                        </div>
+                        <span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full font-mono">${count}</span>
+                    </label>
+                `;
+            }).join('');
+
+            updateCategoryBadge();
+        }
+
+        function onCategoryCheckboxChange(checkbox) {
+            const cat = checkbox.value;
+            if (checkbox.checked) {
+                selectedCategories.add(cat);
+            } else {
+                selectedCategories.delete(cat);
+            }
+            updateCategoryBadge();
+            renderCatalog();
+        }
+
+        function toggleAllCategories(shouldSelect) {
+            const checkboxes = document.querySelectorAll('.category-checkbox');
+            selectedCategories.clear();
+
+            checkboxes.forEach(cb => {
+                cb.checked = shouldSelect;
+                if (shouldSelect) {
+                    selectedCategories.add(cb.value);
+                }
+            });
+
+            updateCategoryBadge();
+            renderCatalog();
+        }
+
+        function updateCategoryBadge() {
+            const total = new Set(allProducts.map(p => p.category).filter(Boolean)).size;
+            const current = selectedCategories.size;
+            document.getElementById('catSelectedCountBadge').innerText = `${current}/${total}`;
         }
 
         function getFilteredProducts() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
-            const selectedCat = document.getElementById('categorySelect').value;
 
             return allProducts.filter(p => {
                 const matchesSearch = p.name.toLowerCase().includes(searchTerm) || 
                                      p.id.toLowerCase().includes(searchTerm) ||
                                      (p.category && p.category.toLowerCase().includes(searchTerm));
-                const matchesCat = selectedCat === 'ALL' || p.category === selectedCat;
+                
+                // Check if product category is selected in Category Checkboxes
+                const matchesCat = selectedCategories.has(p.category);
                 return matchesSearch && matchesCat;
             });
         }
@@ -618,12 +760,12 @@
             const count = selectedProductIds.size;
             document.getElementById('selectedCountBadge').innerText = `${count} បានជ្រើសរើស`;
             
-            // Calculate total A4 pages needed (strictly 6 items per page)
+            // Calculate total A4 pages needed (EXACTLY 6 items per page)
             const totalPages = Math.ceil(count / 6);
             document.getElementById('pageCountSummary').innerText = `${totalPages} ទំព័រ A4`;
         }
 
-        // Main function to render A4 pages with EXACTLY 6 products per page
+        // Main function to render strictly bounded A4 Pages (6 Products per Page)
         function renderCatalog() {
             const container = document.getElementById('catalogContainer');
             container.innerHTML = '';
@@ -639,7 +781,7 @@
                     <div class="bg-white rounded-xl p-12 text-center text-slate-400 my-8 shadow-sm border border-slate-200">
                         <i class="fa-solid fa-box-open text-5xl mb-3 text-slate-300"></i>
                         <p class="font-medium text-sm">មិនទាន់មានផលិតផលត្រូវបានជ្រើសរើសសម្រាប់បង្កើត PDF ទេ។</p>
-                        <p class="text-xs text-slate-400 mt-1">សូមជ្រើសរើសផលិតផលឡើងវិញ ឬ ស្វែងរកតាមឈ្មោះ/លេខកូដ។</p>
+                        <p class="text-xs text-slate-400 mt-1">សូមជ្រើសរើសប្រភេទទំនិញ (Category) ឬ ស្វែងរកតាមឈ្មោះ/លេខកូដ។</p>
                     </div>
                 `;
                 return;
@@ -661,23 +803,23 @@
 
                 pageEl.innerHTML = `
                     <!-- Printable Header -->
-                    <div class="border-b-2 border-red-600 pb-2 mb-1 flex justify-between items-end">
+                    <div class="border-b-2 border-red-600 pb-1.5 mb-1 flex justify-between items-end flex-shrink-0">
                         <div>
-                            <h1 class="font-bold text-red-600 text-base md:text-lg leading-tight uppercase tracking-tight">${escapeHtml(shopTitle)}</h1>
-                            <p class="text-[11px] text-slate-600">${escapeHtml(shopContact)}</p>
+                            <h1 class="font-bold text-red-600 text-sm md:text-base leading-tight uppercase tracking-tight">${escapeHtml(shopTitle)}</h1>
+                            <p class="text-[10px] text-slate-600">${escapeHtml(shopContact)}</p>
                         </div>
-                        <div class="text-right text-[11px] text-slate-400 font-medium">
+                        <div class="text-right text-[10px] text-slate-400 font-medium">
                             ទំព័រទី ${pageIdx + 1} នៃ ${totalPages}
                         </div>
                     </div>
 
-                    <!-- 2 Column x 3 Row Grid for 6 Products -->
+                    <!-- 2 Column x 3 Row Strict Grid for 6 Products -->
                     <div class="product-grid-a4">
                         ${pageItems.map(p => renderProductCard(p, priceType)).join('')}
                     </div>
 
                     <!-- Printable Footer -->
-                    <div class="border-t border-slate-200 pt-2 mt-1 flex justify-between items-center text-[10px] text-slate-400">
+                    <div class="border-t border-slate-200 pt-1.5 mt-1 flex justify-between items-center text-[9px] text-slate-400 flex-shrink-0">
                         <span>DADING SHOP Product Catalog System • A4 Print Ready</span>
                         <span>ថ្ងៃបោះពុម្ព៖ ${new Date().toLocaleDateString('km-KH')}</span>
                     </div>
@@ -694,14 +836,25 @@
             const vipPriceVal = p.vipPrice ? `$${p.vipPrice.toFixed(2)}` : salePriceVal;
 
             if (priceType === 'sale') {
-                priceDisplay = `<span class="text-red-600 font-bold text-sm">${salePriceVal}</span>`;
+                priceDisplay = `
+                    <div class="text-right">
+                        <span class="text-[9px] text-slate-400 block leading-none font-medium">តម្លៃ / Price:</span>
+                        <span class="text-red-600 font-extrabold text-sm md:text-base tracking-tight">${salePriceVal}</span>
+                    </div>`;
             } else if (priceType === 'vip') {
-                priceDisplay = `<span class="text-emerald-700 font-bold text-sm">${vipPriceVal}</span> <span class="text-[10px] text-emerald-600 font-semibold">(VIP)</span>`;
+                priceDisplay = `
+                    <div class="text-right">
+                        <span class="text-[9px] text-emerald-600 block leading-none font-semibold">(VIP)</span>
+                        <span class="text-emerald-600 font-extrabold text-sm md:text-base tracking-tight">${vipPriceVal}</span>
+                    </div>`;
             } else {
                 priceDisplay = `
-                    <div class="flex flex-col items-end">
-                        <span class="text-slate-400 text-[10px] line-through">${salePriceVal}</span>
-                        <span class="text-red-600 font-bold text-sm">${vipPriceVal} <span class="text-[9px] text-emerald-600 font-bold">(VIP)</span></span>
+                    <div class="text-right leading-none">
+                        <div class="text-slate-400 text-[10px] line-through inline-block mr-1 font-medium">${salePriceVal}</div>
+                        <div class="inline-flex items-center gap-0.5">
+                            <span class="text-red-600 font-extrabold text-sm md:text-base tracking-tight">${vipPriceVal}</span>
+                            <span class="text-emerald-600 text-[9px] font-bold uppercase">(VIP)</span>
+                        </div>
                     </div>
                 `;
             }
@@ -709,44 +862,42 @@
             const imageUrl = p.photo || 'https://placehold.co/400x350/ffffff/e2e8f0?text=No+Photo';
 
             return `
-                <div class="border border-slate-200 rounded-lg p-2 bg-white flex flex-col justify-between shadow-sm relative group overflow-hidden">
-                    <!-- Top ID & Checkbox -->
-                    <div class="flex justify-between items-start mb-1 gap-1">
-                        <span class="bg-slate-100 text-slate-700 font-mono font-bold text-[10px] px-1.5 py-0.5 rounded border border-slate-200">
-                            ID: ${escapeHtml(p.id)}
-                        </span>
-                        <div class="no-print">
-                            <input type="checkbox" checked onchange="toggleSelectProduct('${p.id}')" 
-                                class="w-4 h-4 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer">
-                        </div>
+                <div class="product-card-a4 relative">
+                    <!-- Absolute Checkbox for selecting product (no-print) -->
+                    <div class="no-print absolute top-1.5 right-1.5 z-10 bg-white/90 p-0.5 rounded border border-slate-200 shadow-sm">
+                        <input type="checkbox" checked onchange="toggleSelectProduct('${p.id}')" 
+                            class="w-3.5 h-3.5 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer block">
                     </div>
 
-                    <!-- Product Image with referrerpolicy="no-referrer" to prevent blocking -->
-                    <div class="w-full h-36 bg-slate-50 rounded flex items-center justify-center overflow-hidden mb-1.5 border border-slate-100 relative cursor-pointer"
-                         onclick="openImageModal('${escapeHtml(imageUrl)}')">
+                    <!-- Maximized Product Image Box -->
+                    <div class="product-image-box !mt-0 !mb-1" onclick="openImageModal('${escapeHtml(imageUrl)}')">
                         <img src="${escapeHtml(imageUrl)}" 
                              alt="${escapeHtml(p.name)}" 
                              referrerpolicy="no-referrer"
                              loading="lazy"
-                             class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
                              onerror="this.onerror=null; this.src='https://placehold.co/400x350/ffffff/e2e8f0?text=Image+Error';">
                     </div>
 
-                    <!-- Product Information -->
-                    <div class="flex-grow flex flex-col justify-between space-y-1">
-                        <h3 class="font-bold text-slate-800 text-xs leading-snug line-clamp-2 h-8">
+                    <!-- Product Details Bottom Area -->
+                    <div class="flex flex-col justify-between flex-shrink-0 space-y-1">
+                        <!-- Product Name -->
+                        <h3 class="font-bold text-slate-800 text-[11px] leading-snug line-clamp-2" title="${escapeHtml(p.name)}">
                             ${escapeHtml(p.name)}
                         </h3>
                         
+                        <!-- ID Badge placed directly below Product Name -->
+                        <div class="flex items-center justify-between text-[10px] leading-none">
+                            <span class="bg-slate-100 text-slate-700 font-mono font-bold px-1.5 py-0.5 rounded border border-slate-200 inline-block">
+                                ID: ${escapeHtml(p.id)}
+                            </span>
+                        </div>
+
+                        <!-- Size & Price Bottom Row -->
                         <div class="flex justify-between items-end pt-1 border-t border-slate-100">
-                            <div>
-                                <span class="text-[10px] text-slate-500 block">${escapeHtml(p.size || '1 Pcs')}</span>
-                                ${p.category ? `<span class="text-[9px] text-slate-400 block truncate max-w-[110px]">${escapeHtml(p.category)}</span>` : ''}
+                            <div class="pr-1">
+                                <span class="text-[10px] text-slate-500 font-medium block leading-none">${escapeHtml(p.size || '1 Pcs')}</span>
                             </div>
-                            <div class="text-right">
-                                <span class="text-[9px] text-slate-400 block">តម្លៃ / Price:</span>
-                                ${priceDisplay}
-                            </div>
+                            ${priceDisplay}
                         </div>
                     </div>
                 </div>
@@ -785,7 +936,7 @@
             renderCatalog();
         }
 
-        // Trigger Browser Native Print (Save as PDF)
+        // Trigger Browser Native Print
         function triggerPrint() {
             setViewMode('a4');
             setTimeout(() => {
@@ -853,7 +1004,7 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // Utility HTML Escaper
+        // HTML Escaper
         function escapeHtml(str) {
             if (!str) return '';
             return String(str)
