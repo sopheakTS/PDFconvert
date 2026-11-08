@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DADING SHOP - A4 Catalog Generator (6 ផលិតផល/ទំព័រ - Group Code Support)</title>
+    <title>DADING SHOP - A4 Catalog Generator (4 ឬ 6 ផលិតផល/ទំព័រ)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,7 +14,7 @@
     <!-- Google Fonts for Khmer & English -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kantenah&family=Koh+Santepheap:wght@400;600;700&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Koh+Santepheap:wght@400;600;700&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- SheetJS for Excel & Google Sheet CSV handling -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -47,19 +47,6 @@
             overflow: hidden;
         }
 
-        /* 2 Column x 3 Row Grid for EXACTLY 6 product groups fitting 100% within 297mm height */
-        .product-grid-a4 {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            grid-template-rows: repeat(3, minmax(0, 1fr));
-            gap: 8px;
-            flex: 1 1 0px;
-            min-height: 0;
-            margin-top: 4px;
-            margin-bottom: 4px;
-            overflow: hidden;
-        }
-
         /* Product Card Styling */
         .product-card-a4 {
             border: 1px solid #cbd5e1;
@@ -75,7 +62,6 @@
             min-height: 0;
             box-sizing: border-box;
             overflow: hidden;
-            transition: all 0.2s ease-in-out;
         }
 
         /* Maximized Image Container */
@@ -112,7 +98,7 @@
 
         /* Group Variant Table Styling inside Card */
         .variant-table-container {
-            max-height: 90px;
+            max-height: 110px;
             overflow-y: auto;
             border: 1px solid #e2e8f0;
             border-radius: 0.375rem;
@@ -194,7 +180,6 @@
             }
         }
 
-        /* Custom Scrollbar */
         .custom-scroll::-webkit-scrollbar {
             width: 5px;
         }
@@ -213,13 +198,6 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -232,11 +210,10 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg leading-tight tracking-wide">DADING SHOP Catalog Generator</h1>
-                    <p class="text-xs text-slate-400">ប្រព័ន្ធបង្កើត A4 PDF (គាំទ្រ Group Code - ៦ ផលិតផល/ទំព័រ)</p>
+                    <p class="text-xs text-slate-400">ប្រព័ន្ធបង្កើត A4 PDF (ជ្រើសរើស ៤ ឬ ៦ រូបក្នុង ១ ទំព័រ)</p>
                 </div>
             </div>
 
-            <!-- Google Sheet Sync Status Bar in Header -->
             <div class="hidden lg:flex items-center bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-300 gap-2">
                 <i class="fa-solid fa-link text-emerald-400"></i>
                 <span class="truncate max-w-xs" id="currentSheetStatusText">Google Sheet Connected</span>
@@ -245,14 +222,12 @@
                 </button>
             </div>
 
-            <!-- Header Quick Actions -->
             <div class="flex items-center gap-2 flex-wrap">
                 <button onclick="openImportModal()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs md:text-sm px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-slate-700">
                     <i class="fa-solid fa-file-import text-emerald-400"></i>
-                    <span>ភ្ជាប់ Google Sheet / Excel</span>
+                    <span>ភ្ជាប់ Google Sheet</span>
                 </button>
                 
-                <!-- Print Buttons -->
                 <button onclick="triggerPrint()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm px-3 py-2 rounded-lg font-semibold transition flex items-center gap-1.5 shadow">
                     <i class="fa-solid fa-print"></i>
                     <span>ព្រីន</span>
@@ -260,28 +235,22 @@
 
                 <button onclick="triggerSavePDF()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs md:text-sm px-3 py-2 rounded-lg font-semibold transition flex items-center gap-1.5 shadow">
                     <i class="fa-solid fa-file-pdf"></i>
-                    <span>Save ជា PDF</span>
-                </button>
-
-                <button onclick="triggerPrintA4()" class="bg-red-600 hover:bg-red-700 text-white text-xs md:text-sm px-3 py-2 rounded-lg font-semibold transition flex items-center gap-1.5 shadow-lg hover:shadow-red-900/50">
-                    <i class="fa-solid fa-file-invoice"></i>
-                    <span>ព្រីន A4</span>
+                    <span>Save PDF</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Alert Banner for Feedback Messages -->
     <div id="alertBanner" class="no-print hidden bg-emerald-600 text-white px-4 py-2 text-center text-xs font-medium shadow-md transition-all">
         <span id="alertBannerText">ទាញយកទិន្នន័យបានជោគជ័យ!</span>
     </div>
 
     <main class="flex-grow flex flex-col md:flex-row max-w-7xl w-full mx-auto p-4 gap-6">
         
-        <!-- Left Sidebar: Controls & Multi-Category Selector -->
+        <!-- Left Sidebar -->
         <aside class="no-print w-full md:w-80 flex-shrink-0 space-y-4">
             
-            <!-- Quick Google Sheet Link Sync Box -->
+            <!-- Google Sheet Link Sync Box -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-3">
                 <h2 class="font-bold text-slate-800 text-xs flex items-center justify-between">
                     <span class="flex items-center gap-2">
@@ -304,7 +273,7 @@
                 </div>
             </div>
 
-            <!-- Group Code Mode Toggle Card (NEW FEATURE) -->
+            <!-- Group Code Mode Toggle Card -->
             <div class="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl p-4 space-y-2 shadow-sm">
                 <div class="flex items-center justify-between">
                     <label for="groupModeToggle" class="font-bold text-red-900 text-xs flex items-center gap-2 cursor-pointer">
@@ -315,10 +284,26 @@
                            class="w-4 h-4 text-red-600 rounded border-red-300 focus:ring-red-500 cursor-pointer">
                 </div>
                 <p class="text-[11px] text-slate-600 leading-tight">
-                    បើក៖ ផ្គុំផលិតផលដែលមាន Group Code ដូចគ្នាឱ្យនៅតែ <b>១ប្រអប់</b> (រួមមានច្រើនជម្រើសទំហំ/កូដ)។
+                    បើក៖ ផ្គុំផលិតផលដែលមាន Group Code ដូចគ្នាឱ្យនៅតែ ១ប្រអប់។
                 </p>
                 <div id="groupStatsBadge" class="text-[10px] font-medium text-red-700 bg-white/80 px-2 py-1 rounded border border-red-200 inline-block">
                     ចំនួនក្រុម៖ <span id="groupCountText" class="font-bold">0</span> ក្រុម (<span id="totalItemsText">0</span> មុខទំនិញ)
+                </div>
+            </div>
+
+            <!-- Layout A4 Mode Selector (4 or 6 images) -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-3">
+                <h2 class="font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2 text-xs">
+                    <i class="fa-solid fa-file-lines text-red-500"></i>
+                    <span>ទម្រង់បង្ហាញក្នុង ១ ទំព័រ A4</span>
+                </h2>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="btnLayout4" onclick="setPageLayout(4)" class="py-2 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 text-center hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-table-cells-large mr-1"></i> ៤ រូប / ទំព័រ
+                    </button>
+                    <button id="btnLayout6" onclick="setPageLayout(6)" class="py-2 text-xs font-medium rounded-lg border border-red-500 bg-red-50 text-red-600 text-center transition">
+                        <i class="fa-solid fa-table-cells mr-1"></i> ៦ រូប / ទំព័រ
+                    </button>
                 </div>
             </div>
 
@@ -334,7 +319,6 @@
                     </span>
                 </div>
 
-                <!-- Quick Category Checkbox Controls -->
                 <div class="flex items-center justify-between text-[11px]">
                     <button onclick="toggleAllCategories(true)" class="text-red-600 font-medium hover:underline">
                         <i class="fa-regular fa-square-check mr-1"></i> ធីកទាំងអស់
@@ -345,7 +329,6 @@
                     </button>
                 </div>
 
-                <!-- Dynamic Category Checkbox List -->
                 <div id="categoryCheckboxContainer" class="space-y-1.5 max-h-48 overflow-y-auto custom-scroll pr-1 pt-1">
                     <!-- Checkboxes populated dynamically -->
                 </div>
@@ -355,39 +338,25 @@
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-3">
                 <h2 class="font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2 text-xs">
                     <i class="fa-solid fa-sliders text-blue-500"></i>
-                    <span>ការកំណត់ទំព័រ A4 & តម្លៃ</span>
+                    <span>ការកំណត់តម្លៃ & ក្បាលទំព័រ</span>
                 </h2>
 
-                <!-- Price display option -->
                 <div>
-                    <label class="text-xs font-semibold text-slate-600 block mb-1">ជ្រើសរើសប្រភេទតម្លៃបង្ហាញ៖</label>
+                    <label class="text-xs font-semibold text-slate-600 block mb-1">ជ្រើសរើសការបង្ហាញតម្លៃ៖</label>
                     <select id="priceTypeSelect" onchange="renderCatalog()" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-red-500 focus:outline-none">
-                        <option value="both">បង្ហាញទាំងពីរ (Sale Price & VIP Price)</option>
+                        <option value="both">បង្ហាញតម្លៃទាំងពីរ (Sale & VIP)</option>
                         <option value="sale">បង្ហាញតែ តម្លៃលក់ (Sale Price)</option>
                         <option value="vip">បង្ហាញតែ តម្លៃ VIP (VIP Price)</option>
+                        <option value="none">មិនបង្ហាញតម្លៃ (លុបតម្លៃចេញ)</option>
                     </select>
                 </div>
 
-                <!-- Custom Header Info for Printed Page -->
                 <div class="space-y-2">
                     <label class="text-xs font-semibold text-slate-600 block">ព័ត៌មានលើក្បាលទំព័រ A4៖</label>
                     <input type="text" id="shopTitleInput" value="DADING SHOP (មានលក់ សម្ភារជាង ម៉ូទ័រBESTIR និងសម្ភារបន្ទប់ទឹក)" 
-                        oninput="updateHeaderInfo()" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-1 focus:ring-red-500" placeholder="ឈ្មោះហាង / ក្បាលទំព័រ">
+                        oninput="updateHeaderInfo()" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-1 focus:ring-red-500" placeholder="ឈ្មោះហាង">
                     <input type="text" id="shopContactInput" value="ទំនាក់ទំនង៖ 96 6760998 / Telegram: @DaDing_Boss" 
-                        oninput="updateHeaderInfo()" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-1 focus:ring-red-500" placeholder="លេខទូរស័ព្ទ / Telegram">
-                </div>
-
-                <!-- View Mode Selector -->
-                <div>
-                    <label class="text-xs font-semibold text-slate-600 block mb-1">ទម្រង់បង្ហាញលើអេក្រង់៖</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="btnViewA4" onclick="setViewMode('a4')" class="py-1.5 text-xs font-medium rounded-lg border border-red-500 bg-red-50 text-red-600 text-center">
-                            <i class="fa-solid fa-file-pdf mr-1"></i> A4 Print View
-                        </button>
-                        <button id="btnViewGrid" onclick="setViewMode('grid')" class="py-1.5 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 text-center hover:bg-slate-50">
-                            <i class="fa-solid fa-grip mr-1"></i> Quick Grid
-                        </button>
-                    </div>
+                        oninput="updateHeaderInfo()" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-1 focus:ring-red-500" placeholder="លេខទូរស័ព្ទ">
                 </div>
             </div>
 
@@ -403,14 +372,12 @@
                     </span>
                 </div>
 
-                <!-- Search Input -->
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
                     <input type="text" id="searchInput" oninput="filterProducts()" placeholder="ស្វែងរកឈ្មោះ លេខកូដ ឬ Group..." 
                         class="w-full text-xs border border-slate-300 rounded-lg pl-8 pr-3 py-2 focus:ring-2 focus:ring-red-500 focus:outline-none">
                 </div>
 
-                <!-- Bulk Selection Buttons -->
                 <div class="flex gap-2 pt-1">
                     <button onclick="selectAll(true)" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs py-1.5 rounded border border-slate-300 font-medium transition">
                         <i class="fa-regular fa-square-check mr-1"></i> ជ្រើសរើសទាំងអស់
@@ -420,7 +387,6 @@
                     </button>
                 </div>
 
-                <!-- Page Count Summary -->
                 <div class="p-3 bg-red-50 border border-red-100 rounded-lg text-xs text-red-800 flex items-center justify-between">
                     <span>ចំនួនទំព័រ A4 សរុប៖</span>
                     <span id="pageCountSummary" class="font-bold text-sm">0 ទំព័រ</span>
@@ -428,21 +394,18 @@
             </div>
         </aside>
 
-        <!-- Center Display Area (A4 Preview Container) -->
+        <!-- Center Display Area -->
         <section class="flex-grow overflow-auto">
-            
-            <!-- Summary Bar for Print Preview -->
             <div class="no-print bg-white p-3 rounded-xl border border-slate-200 mb-4 flex items-center justify-between text-xs text-slate-600 flex-wrap gap-2">
                 <div>
                     <i class="fa-solid fa-circle-info text-blue-500 mr-1"></i>
-                    <span>ទម្រង់ទំព័រ៖ <b>A4 Vertical (210mm x 297mm)</b> | បង្ហាញ៖ <b>៦ ប្រអប់/ទំព័រ</b></span>
+                    <span>ទម្រង់ទំព័រ៖ <b>A4 Portrait</b> | បង្ហាញ៖ <b id="layoutStatusText">៦ ប្រអប់/ទំព័រ</b></span>
                 </div>
                 <div class="font-medium text-slate-800">
                     បង្ហាញ <span id="visibleItemsCount" class="text-red-600 font-bold">0</span> ប្រអប់
                 </div>
             </div>
 
-            <!-- Container where A4 pages will be dynamically rendered -->
             <div id="catalogContainer" class="print-container">
                 <!-- Pages generated dynamically -->
             </div>
@@ -473,12 +436,8 @@
             </div>
 
             <div class="p-6 space-y-5 text-xs text-slate-600">
-                <!-- Option 1: Google Sheet Link -->
                 <div class="space-y-2 border-b border-slate-100 pb-4">
                     <label class="font-bold text-slate-800 text-xs block">ជម្រើសទី ១៖ បញ្ចូល Link Google Sheet</label>
-                    <p class="text-slate-500 text-[11px]">
-                        Copy Link Google Sheet (ដែលមាន Column Group Code) រួច Paste ចូលទីនេះ៖
-                    </p>
                     <div class="flex gap-2">
                         <input type="text" id="gsheetUrlInputModal" 
                             value="https://docs.google.com/spreadsheets/d/1iXLoDPlNtwBr-jfIR8Nd73dxarb9kfv5o3r3MCRCqIo/edit?usp=sharing" 
@@ -490,16 +449,14 @@
                     </div>
                 </div>
 
-                <!-- Option 2: Upload Excel File -->
                 <div class="space-y-2 border-b border-slate-100 pb-4">
                     <label class="font-bold text-slate-800 text-xs block">ជម្រើសទី ២៖ Upload File Excel (.xlsx / .csv)</label>
                     <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" onchange="importFromExcelFile(event)" 
                         class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
                 </div>
 
-                <!-- Option 3: Reset to Default Sample Data -->
                 <div class="flex items-center justify-between pt-1">
-                    <span class="text-slate-500">ប្រើប្រាស់ទិន្នន័យគំរូដើម DADING SHOP៖</span>
+                    <span class="text-slate-500">ប្រើប្រាស់ទិន្នន័យគំរូដើម៖</span>
                     <button onclick="loadSampleData(); closeImportModal();" class="text-red-600 hover:text-red-700 font-semibold underline">
                         ផ្ទុកទិន្នន័យគំរូឡើងវិញ
                     </button>
@@ -515,34 +472,15 @@
     </div>
 
     <script>
-        // Enhanced Sample Data with Group Codes
-        const sampleProducts = [
-            { id: "DA003", groupCode: "DA-CUTTER", name: "កន្ត្រៃកាត់ដែក 断线剪 450mm-18\"", size: "450mm-18\"", price: 7.00, vipPrice: 5.60, category: "ប្រដាប់ប្រដាជាង", photo: "https://i.ibb.co/b5wgD5W/BE-P3006.jpg" },
-            { id: "DA004", groupCode: "DA-CUTTER", name: "កន្ត្រៃកាត់ដែក 断线剪 600mm-24\"", size: "600mm-24\"", price: 9.00, vipPrice: 7.20, category: "ប្រដាប់ប្រដាជាង", photo: "https://i.ibb.co/b5wgD5W/BE-P3006.jpg" },
-            { id: "DA005", groupCode: "DA-CUTTER", name: "កន្ត្រៃកាត់ដែក 断线剪 750mm-30\"", size: "750mm-30\"", price: 12.00, vipPrice: 9.60, category: "ប្រដាប់ប្រដាជាង", photo: "https://i.ibb.co/b5wgD5W/BE-P3006.jpg" },
-            
-            { id: "BE610207", groupCode: "BE-DRILL-21V", name: "ម៉ូទ័រស្វានកាតប្រហោងថ្ម 锂电扳手 (21V / 1000N.M)", size: "6.0Ah", price: 108.00, vipPrice: 85.00, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/r2WkJGb6/BE610207.jpg" },
-            { id: "BE610206", groupCode: "BE-DRILL-21V", name: "ម៉ូទ័រស្វានបាញ់ដែក 充电角磨机 (21V / 8600 r/min)", size: "4.0Ah", price: 68.00, vipPrice: 55.50, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/z3xX1Pzg/BE610206.jpg" },
-            { id: "BE610251", groupCode: "BE-DRILL-21V", name: "ម៉ូទ័រស្វានបាញ់ដែក 充电角磨机 (21V / 8600 r/min)", size: "2.0Ah", price: 58.00, vipPrice: 39.50, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/HLn9329b/BE610251.jpg" },
-
-            { id: "BE-P3006", groupCode: "", name: "ម៉ូទ័រស្វានបាញ់ដែកស្រាលខ្យល់ 气动冲击扳手 (1500N.M)", size: "6 Pcs/ក្បាល", price: 52.00, vipPrice: 48.80, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/b5wgD5W/BE-P3006.jpg" },
-            { id: "BE610208", groupCode: "", name: "ស្វានអគ្គិសនីប្រហោង 充电轻型电锤 (21V / 2.8J)", size: "6.0Ah", price: 108.00, vipPrice: 90.00, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/jvrdKGQn/BE610208.jpg" },
-            { id: "BE620201", groupCode: "", name: "ម៉ូទ័រកាត់ដែក 355mm 切割机专业用 (1010W)", size: "10 Pcs/ក្បាល", price: 24.00, vipPrice: 19.50, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/Cpv96QCW/BE620201.jpg" }
-        ];
-
         // Application State Variables
         let allProducts = [];
-        let groupedProductCards = []; // Dynamic cards after grouping logic
+        let groupedProductCards = []; 
         let selectedGroupIds = new Set();
         let selectedCategories = new Set();
         let isGroupModeEnabled = true;
-        let viewMode = 'a4';
+        let itemsPerPage = 6; // Default 6 items per A4 page (can be 4 or 6)
 
         const DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/1iXLoDPlNtwBr-jfIR8Nd73dxarb9kfv5o3r3MCRCqIo/edit?usp=sharing";
-
-        window.addEventListener('DOMContentLoaded', () => {
-            importFromGSheetLink(DEFAULT_SHEET_URL);
-        });
 
         // Convert Google Sheet URL to CSV export URL
         function getGoogleSheetCsvUrl(rawUrl) {
@@ -584,66 +522,6 @@
             return cleanUrl;
         }
 
-        // Print Action Handlers
-        function triggerPrint() {
-            setViewMode('a4');
-            showStatus('កំពុងរៀបចំការព្រីន...', 'info');
-            setTimeout(() => {
-                window.print();
-            }, 300);
-        }
-
-        function triggerSavePDF() {
-            setViewMode('a4');
-            showStatus('សូមជ្រើសរើស "Save as PDF" ក្នុងផ្ទាំង Print', 'info');
-            setTimeout(() => {
-                window.print();
-            }, 400);
-        }
-
-        function triggerPrintA4() {
-            setViewMode('a4');
-            renderCatalog();
-            showStatus('កំណត់ Layout A4 រួចរាល់! កំពុងបើកផ្ទាំងព្រីន...', 'success');
-            setTimeout(() => {
-                window.print();
-            }, 300);
-        }
-
-        function showStatus(message, type = 'info') {
-            const banner = document.getElementById('alertBanner');
-            const text = document.getElementById('alertBannerText');
-            const statusText = document.getElementById('currentSheetStatusText');
-
-            text.innerText = message;
-            if (type === 'error') {
-                banner.className = "no-print bg-red-600 text-white px-4 py-2 text-center text-xs font-medium shadow-md transition-all";
-                if (statusText) statusText.innerText = "ការភ្ជាប់មានបញ្ហា";
-            } else if (type === 'success') {
-                banner.className = "no-print bg-emerald-600 text-white px-4 py-2 text-center text-xs font-medium shadow-md transition-all";
-                if (statusText) statusText.innerText = "បានភ្ជាប់ Google Sheet ជោគជ័យ";
-            } else {
-                banner.className = "no-print bg-blue-600 text-white px-4 py-2 text-center text-xs font-medium shadow-md transition-all";
-                if (statusText) statusText.innerText = "កំពុងដំណើរការ...";
-            }
-
-            banner.classList.remove('hidden');
-            setTimeout(() => {
-                banner.classList.add('hidden');
-            }, 4000);
-        }
-
-        function syncFromMainInput() {
-            const url = document.getElementById('gsheetUrlInputMain').value.trim();
-            importFromGSheetLink(url);
-        }
-
-        function importFromModalInput() {
-            const url = document.getElementById('gsheetUrlInputModal').value.trim();
-            importFromGSheetLink(url);
-            closeImportModal();
-        }
-
         // Fetch Data from Google Sheet
         async function importFromGSheetLink(targetUrl) {
             const rawUrl = targetUrl || document.getElementById('gsheetUrlInputMain').value.trim();
@@ -652,8 +530,10 @@
                 return;
             }
 
-            document.getElementById('gsheetUrlInputMain').value = rawUrl;
-            document.getElementById('gsheetUrlInputModal').value = rawUrl;
+            const mainInput = document.getElementById('gsheetUrlInputMain');
+            const modalInput = document.getElementById('gsheetUrlInputModal');
+            if (mainInput) mainInput.value = rawUrl;
+            if (modalInput) modalInput.value = rawUrl;
 
             const spinner = document.getElementById('syncSpinner');
             if (spinner) spinner.classList.remove('hidden');
@@ -687,12 +567,32 @@
             } catch (err) {
                 console.error('Fetch error:', err);
                 showStatus('មិនអាចទាញយកទិន្នន័យបានទេ! សូមពិនិត្យ Link Google Sheet', 'error');
-                if (allProducts.length === 0) {
-                    loadSampleData();
-                }
             } finally {
                 if (spinner) spinner.classList.add('hidden');
             }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            importFromGSheetLink(DEFAULT_SHEET_URL);
+        });
+
+        // Function to switch between 4 images and 6 images layout per A4 page
+        function setPageLayout(count) {
+            itemsPerPage = count;
+            const btn4 = document.getElementById('btnLayout4');
+            const btn6 = document.getElementById('btnLayout6');
+            const statusText = document.getElementById('layoutStatusText');
+
+            if (count === 4) {
+                btn4.className = "py-2 text-xs font-medium rounded-lg border border-red-500 bg-red-50 text-red-600 text-center transition";
+                btn6.className = "py-2 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 text-center hover:bg-slate-50 transition";
+                if (statusText) statusText.innerText = "៤ ប្រអប់/ទំព័រ (រូបភាពធំ)";
+            } else {
+                btn6.className = "py-2 text-xs font-medium rounded-lg border border-red-500 bg-red-50 text-red-600 text-center transition";
+                btn4.className = "py-2 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 text-center hover:bg-slate-50 transition";
+                if (statusText) statusText.innerText = "៦ ប្រអប់/ទំព័រ";
+            }
+            renderCatalog();
         }
 
         function parseAndSetCSVData(csvText) {
@@ -711,7 +611,6 @@
 
             const mapped = rows.map((r, i) => {
                 const keys = Object.keys(r);
-
                 const findKey = (keywords) => {
                     return keys.find(k => {
                         const cleanKey = String(k).toLowerCase().trim().replace(/[^a-z0-9ខ្មែរ]/g, '');
@@ -726,8 +625,6 @@
                 const vipKey = findKey(['vipprice', 'vip price', 'vip', 'តម្លៃvip']) || keys[4];
                 const categoryKey = findKey(['category', 'ប្រភេទទំនិញ', 'ប្រភេទ']) || keys[5];
                 const photoKey = findKey(['linkphoto', 'photo', 'image', 'img', 'picture', 'រូបភាព']) || keys.find(k => String(r[k]).startsWith('http'));
-                
-                // Detection for Group Code (column L in spreadsheet)
                 const groupCodeKey = findKey(['groupcode', 'group code', 'group_code', 'group', 'កូដក្រុម']) || keys.find(k => String(k).toLowerCase().includes('group'));
 
                 const cleanPrice = (val) => {
@@ -749,7 +646,7 @@
                     category: String(r[categoryKey] || 'ផ្សេងៗ').trim(),
                     photo: sanitizeImageUrl(rawPhoto)
                 };
-            }).filter(p => p.name !== 'គ្មានឈ្មោះ' || p.id.startsWith('PROD-') === false);
+            }).filter(p => p.name !== 'គ្មានឈ្មោះ');
 
             allProducts = mapped;
             buildGroupedProductCards();
@@ -757,9 +654,11 @@
             renderCatalog();
         }
 
-        // Grouping Engine Logic
         function toggleGroupMode() {
-            isGroupModeEnabled = document.getElementById('groupModeToggle').checked;
+            const toggleEl = document.getElementById('groupModeToggle');
+            if (toggleEl) {
+                isGroupModeEnabled = toggleEl.checked;
+            }
             buildGroupedProductCards();
             renderCatalog();
         }
@@ -768,7 +667,6 @@
             groupedProductCards = [];
 
             if (!isGroupModeEnabled) {
-                // Standalone mode: each product is its own card
                 groupedProductCards = allProducts.map(p => ({
                     cardId: p.id,
                     groupCode: p.groupCode,
@@ -778,11 +676,9 @@
                     items: [p]
                 }));
             } else {
-                // Grouping mode enabled: merge products sharing non-empty groupCode
                 const groupMap = new Map();
 
                 allProducts.forEach(p => {
-                    // If no group code, treat as standalone
                     const key = p.groupCode ? `GRP::${p.groupCode}` : `SINGLE::${p.id}`;
 
                     if (!groupMap.has(key)) {
@@ -799,16 +695,13 @@
                     const card = groupMap.get(key);
                     card.items.push(p);
 
-                    // Use the first valid image if present
                     if (!card.mainImage && p.photo) {
                         card.mainImage = p.photo;
                     }
                 });
 
-                // Clean up title for grouped products (remove specific size suffixes if common prefix exists)
                 groupMap.forEach(card => {
                     if (card.items.length > 1) {
-                        // Find common name prefix among items
                         const names = card.items.map(i => i.name);
                         let commonName = names[0];
                         for (let i = 1; i < names.length; i++) {
@@ -824,17 +717,20 @@
                 });
             }
 
-            // Select all generated group cards by default
             selectedGroupIds = new Set(groupedProductCards.map(c => c.cardId));
 
-            // Update statistics UI
-            const groupCount = groupedProductCards.filter(c => c.items.length > 1).length;
-            document.getElementById('groupCountText').innerText = groupCount;
-            document.getElementById('totalItemsText').innerText = allProducts.length;
+            const groupCountEl = document.getElementById('groupCountText');
+            const totalItemsEl = document.getElementById('totalItemsText');
+            if (groupCountEl) groupCountEl.innerText = groupedProductCards.filter(c => c.items.length > 1).length;
+            if (totalItemsEl) totalItemsEl.innerText = allProducts.length;
         }
 
         function loadSampleData() {
-            allProducts = JSON.parse(JSON.stringify(sampleProducts));
+            allProducts = JSON.parse(JSON.stringify([
+                { id: "DA003", groupCode: "DA-CUTTER", name: "កន្ត្រៃកាត់ដែក 断线剪 450mm-18\"", size: "450mm-18\"", price: 7.00, vipPrice: 5.60, category: "ប្រដាប់ប្រដាជាង", photo: "https://i.ibb.co/b5wgD5W/BE-P3006.jpg" },
+                { id: "DA004", groupCode: "DA-CUTTER", name: "កន្ត្រៃកាត់ដែក 断线剪 600mm-24\"", size: "600mm-24\"", price: 9.00, vipPrice: 7.20, category: "ប្រដាប់ប្រដាជាង", photo: "https://i.ibb.co/b5wgD5W/BE-P3006.jpg" },
+                { id: "BE610207", groupCode: "BE-DRILL-21V", name: "ម៉ូទ័រស្វានកាតប្រហោងថ្ម 锂电扳手 (21V / 1000N.M)", size: "6.0Ah", price: 108.00, vipPrice: 85.00, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/r2WkJGb6/BE610207.jpg" }
+            ]));
             buildGroupedProductCards();
             populateCategories();
             renderCatalog();
@@ -842,8 +738,9 @@
 
         function populateCategories() {
             const container = document.getElementById('categoryCheckboxContainer');
+            if (!container) return;
+
             const categories = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
-            
             selectedCategories = new Set(categories);
 
             if (categories.length === 0) {
@@ -898,20 +795,19 @@
         function updateCategoryBadge() {
             const total = new Set(allProducts.map(p => p.category).filter(Boolean)).size;
             const current = selectedCategories.size;
-            document.getElementById('catSelectedCountBadge').innerText = `${current}/${total}`;
+            const badge = document.getElementById('catSelectedCountBadge');
+            if (badge) badge.innerText = `${current}/${total}`;
         }
 
         function getFilteredGroupCards() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const searchInput = document.getElementById('searchInput');
+            const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
             return groupedProductCards.filter(card => {
                 const matchesCategory = selectedCategories.has(card.category);
-                
                 if (!matchesCategory) return false;
-
                 if (!searchTerm) return true;
 
-                // Search matching name, items code, or group code
                 const matchTitle = card.mainTitle.toLowerCase().includes(searchTerm);
                 const matchGroup = card.groupCode && card.groupCode.toLowerCase().includes(searchTerm);
                 const matchItems = card.items.some(i => 
@@ -951,20 +847,24 @@
 
         function updateBadgeCounts() {
             const count = selectedGroupIds.size;
-            document.getElementById('selectedCountBadge').innerText = `${count} បានជ្រើសរើស`;
-            
-            const totalPages = Math.ceil(count / 6);
-            document.getElementById('pageCountSummary').innerText = `${totalPages} ទំព័រ A4`;
+            const badgeEl = document.getElementById('selectedCountBadge');
+            const summaryEl = document.getElementById('pageCountSummary');
+
+            if (badgeEl) badgeEl.innerText = `${count} បានជ្រើសរើស`;
+            const totalPages = Math.ceil(count / itemsPerPage);
+            if (summaryEl) summaryEl.innerText = `${totalPages} ទំព័រ A4`;
         }
 
         function renderCatalog() {
             const container = document.getElementById('catalogContainer');
+            if (!container) return;
             container.innerHTML = '';
 
             const filteredCards = getFilteredGroupCards();
             const selectedCardsList = filteredCards.filter(c => selectedGroupIds.has(c.cardId));
 
-            document.getElementById('visibleItemsCount').innerText = selectedCardsList.length;
+            const visibleItemsCountEl = document.getElementById('visibleItemsCount');
+            if (visibleItemsCountEl) visibleItemsCountEl.innerText = selectedCardsList.length;
             updateBadgeCounts();
 
             if (selectedCardsList.length === 0) {
@@ -978,11 +878,15 @@
                 return;
             }
 
-            const priceType = document.getElementById('priceTypeSelect').value;
-            const shopTitle = document.getElementById('shopTitleInput').value;
-            const shopContact = document.getElementById('shopContactInput').value;
+            const priceTypeSelect = document.getElementById('priceTypeSelect');
+            const shopTitleInput = document.getElementById('shopTitleInput');
+            const shopContactInput = document.getElementById('shopContactInput');
 
-            const chunkSize = 6;
+            const priceType = priceTypeSelect ? priceTypeSelect.value : 'both';
+            const shopTitle = shopTitleInput ? shopTitleInput.value : '';
+            const shopContact = shopContactInput ? shopContactInput.value : '';
+
+            const chunkSize = itemsPerPage; 
             const totalPages = Math.ceil(selectedCardsList.length / chunkSize);
 
             for (let pageIdx = 0; pageIdx < totalPages; pageIdx++) {
@@ -991,8 +895,10 @@
                 const pageEl = document.createElement('div');
                 pageEl.className = 'a4-page';
 
+                // Grid template rows: 2 rows if 4 items per page, 3 rows if 6 items per page
+                const rowCount = itemsPerPage === 4 ? 2 : 3;
+
                 pageEl.innerHTML = `
-                    <!-- Printable Header -->
                     <div class="border-b-2 border-red-600 pb-1.5 mb-1 flex justify-between items-end flex-shrink-0">
                         <div>
                             <h1 class="font-bold text-red-600 text-sm md:text-base leading-tight uppercase tracking-tight">${escapeHtml(shopTitle)}</h1>
@@ -1003,14 +909,12 @@
                         </div>
                     </div>
 
-                    <!-- 2 Column x 3 Row Strict Grid for 6 Group Cards -->
-                    <div class="product-grid-a4">
+                    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(${rowCount}, minmax(0, 1fr)); gap: 8px; flex: 1 1 0px; min-height: 0; margin-top: 4px; margin-bottom: 4px; overflow: hidden;">
                         ${pageCards.map(c => renderGroupProductCard(c, priceType)).join('')}
                     </div>
 
-                    <!-- Printable Footer -->
                     <div class="border-t border-slate-200 pt-1.5 mt-1 flex justify-between items-center text-[9px] text-slate-400 flex-shrink-0">
-                        <span>DADING SHOP Product Catalog System • Group Code Variant Ready</span>
+                        <span>DADING SHOP Product Catalog System</span>
                         <span>ថ្ងៃបោះពុម្ព៖ ${new Date().toLocaleDateString('km-KH')}</span>
                     </div>
                 `;
@@ -1019,24 +923,23 @@
             }
         }
 
-        // Render Multi-Variant Card for 1 Product with multiple options
         function renderGroupProductCard(card, priceType) {
             const imageUrl = card.mainImage || 'https://placehold.co/400x350/ffffff/e2e8f0?text=No+Photo';
             const isMultiVariant = card.items.length > 1;
 
-            // Collect unique packaging / size info to display at card level
             const uniqueSizes = [...new Set(card.items.map(i => i.size).filter(Boolean))];
             const sizeSummaryText = uniqueSizes.length > 0 ? uniqueSizes.join(' | ') : '';
 
             let variantsHTML = '';
 
             if (isMultiVariant) {
-                // Table of options for multi-variant products
+                const showPriceCol = priceType !== 'none';
+
                 variantsHTML = `
                     ${sizeSummaryText ? `
-                        <div class="text-[9px] text-slate-600 font-medium truncate flex items-center gap-1 my-1 bg-slate-100/80 px-1.5 py-0.5 rounded border border-slate-200" title="ចំនួនក្នុងកេស/ប្រអប់: ${escapeHtml(sizeSummaryText)}">
+                        <div class="text-[9px] text-slate-600 font-medium truncate flex items-center gap-1 my-1 bg-slate-100/80 px-1.5 py-0.5 rounded border border-slate-200">
                             <i class="fa-solid fa-box text-slate-400 text-[8px]"></i>
-                            <span class="truncate">ចំនួនក្នុងកេស/ប្រអប់: <b>${escapeHtml(sizeSummaryText)}</b></span>
+                            <span class="truncate">ទំហំ/កេស: <b>${escapeHtml(sizeSummaryText)}</b></span>
                         </div>
                     ` : ''}
                     <div class="variant-table-container variant-scroll my-1">
@@ -1045,7 +948,7 @@
                                 <tr>
                                     <th class="whitespace-nowrap pr-1.5">កូដ / ID</th>
                                     <th class="text-left">ឈ្មោះ / Description</th>
-                                    <th class="text-right whitespace-nowrap pl-1">តម្លៃ (USD)</th>
+                                    ${showPriceCol ? '<th class="text-right whitespace-nowrap pl-1">តម្លៃ (USD)</th>' : ''}
                                 </tr>
                             </thead>
                             <tbody>
@@ -1055,18 +958,18 @@
                                     let priceCell = '';
                                     
                                     if (priceType === 'sale') {
-                                        priceCell = `<span class="font-bold text-red-600">${saleStr}</span>`;
+                                        priceCell = `<td class="text-right whitespace-nowrap pl-1"><span class="font-bold text-red-600">${saleStr}</span></td>`;
                                     } else if (priceType === 'vip') {
-                                        priceCell = `<span class="font-bold text-emerald-600">${vipStr}</span>`;
-                                    } else {
-                                        priceCell = `<span class="text-[8px] text-slate-400 line-through mr-0.5">${saleStr}</span><span class="font-bold text-red-600">${vipStr}</span>`;
+                                        priceCell = `<td class="text-right whitespace-nowrap pl-1"><span class="font-bold text-emerald-600">${vipStr}</span></td>`;
+                                    } else if (priceType === 'both') {
+                                        priceCell = `<td class="text-right whitespace-nowrap pl-1"><span class="text-[8px] text-slate-400 line-through mr-0.5">${saleStr}</span><span class="font-bold text-red-600">${vipStr}</span></td>`;
                                     }
 
                                     return `
                                         <tr>
                                             <td class="font-mono font-bold text-slate-700 whitespace-nowrap pr-1.5">${escapeHtml(item.id)}</td>
                                             <td class="truncate text-slate-800 font-medium" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</td>
-                                            <td class="text-right whitespace-nowrap pl-1">${priceCell}</td>
+                                            ${showPriceCol ? priceCell : ''}
                                         </tr>
                                     `;
                                 }).join('')}
@@ -1075,7 +978,6 @@
                     </div>
                 `;
             } else {
-                // Single item display
                 const single = card.items[0];
                 const salePriceVal = single.price ? `$${single.price.toFixed(2)}` : '$0.00';
                 const vipPriceVal = single.vipPrice ? `$${single.vipPrice.toFixed(2)}` : salePriceVal;
@@ -1085,12 +987,11 @@
                     priceDisplay = `<span class="text-red-600 font-extrabold text-sm md:text-base">${salePriceVal}</span>`;
                 } else if (priceType === 'vip') {
                     priceDisplay = `<span class="text-emerald-600 font-extrabold text-sm md:text-base">${vipPriceVal}</span>`;
-                } else {
+                } else if (priceType === 'both') {
                     priceDisplay = `
                         <div class="text-right leading-none">
                             <span class="text-slate-400 text-[10px] line-through mr-1 font-medium">${salePriceVal}</span>
                             <span class="text-red-600 font-extrabold text-sm md:text-base">${vipPriceVal}</span>
-                            <span class="text-emerald-600 text-[8px] font-bold uppercase">(VIP)</span>
                         </div>
                     `;
                 }
@@ -1103,22 +1004,22 @@
                             </span>
                             <span class="text-slate-500 font-medium">${escapeHtml(single.size || '1 Pcs')}</span>
                         </div>
-                        <div class="flex justify-end items-end pt-1">
-                            ${priceDisplay}
-                        </div>
+                        ${priceType !== 'none' ? `
+                            <div class="flex justify-end items-end pt-1">
+                                ${priceDisplay}
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             }
 
             return `
                 <div class="product-card-a4 relative">
-                    <!-- Checkbox for print selection -->
                     <div class="no-print absolute top-1.5 right-1.5 z-10 bg-white/90 p-0.5 rounded border border-slate-200 shadow-sm">
                         <input type="checkbox" checked onchange="toggleSelectGroup('${escapeHtml(card.cardId)}')" 
                             class="w-3.5 h-3.5 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer block">
                     </div>
 
-                    <!-- Category Badge -->
                     <div class="flex justify-between items-center text-[9px]">
                         <span class="bg-red-50 text-red-600 font-bold px-1.5 py-0.5 rounded border border-red-100 uppercase">
                             ${escapeHtml(card.category)}
@@ -1126,7 +1027,6 @@
                         ${card.groupCode ? `<span class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[8px] font-mono">Group: ${escapeHtml(card.groupCode)}</span>` : ''}
                     </div>
 
-                    <!-- Main Image Box -->
                     <div class="product-image-box" onclick="openImageModal('${escapeHtml(imageUrl)}')">
                         <img src="${escapeHtml(imageUrl)}" 
                              alt="${escapeHtml(card.mainTitle)}" 
@@ -1135,58 +1035,75 @@
                              onerror="this.onerror=null; this.src='https://placehold.co/400x350/ffffff/e2e8f0?text=Image+Error';">
                     </div>
 
-                    <!-- Product Header Title -->
                     <div class="flex flex-col justify-between flex-shrink-0">
                         <h3 class="font-bold text-slate-800 text-[11px] leading-tight line-clamp-1" title="${escapeHtml(card.mainTitle)}">
                             ${escapeHtml(card.mainTitle)}
                         </h3>
-                        
-                        <!-- Options / Variants List Section -->
                         ${variantsHTML}
                     </div>
                 </div>
             `;
         }
 
-        // Image & Modal Helpers
+        function triggerPrint() {
+            window.print();
+        }
+
+        function triggerSavePDF() {
+            window.print();
+        }
+
+        function showStatus(message, type = 'info') {
+            const banner = document.getElementById('alertBanner');
+            const text = document.getElementById('alertBannerText');
+            if (!banner || !text) return;
+
+            text.innerText = message;
+            banner.className = type === 'error' ? 
+                "no-print bg-red-600 text-white px-4 py-2 text-center text-xs font-medium shadow-md transition-all" : 
+                "no-print bg-emerald-600 text-white px-4 py-2 text-center text-xs font-medium shadow-md transition-all";
+
+            banner.classList.remove('hidden');
+            setTimeout(() => banner.classList.add('hidden'), 4000);
+        }
+
+        function syncFromMainInput() {
+            const urlEl = document.getElementById('gsheetUrlInputMain');
+            if (urlEl) importFromGSheetLink(urlEl.value.trim());
+        }
+
+        function importFromModalInput() {
+            const urlEl = document.getElementById('gsheetUrlInputModal');
+            if (urlEl) importFromGSheetLink(urlEl.value.trim());
+            closeImportModal();
+        }
+
         function openImageModal(imgSrc) {
-            document.getElementById('modalImage').src = imgSrc;
-            document.getElementById('imageModal').classList.remove('hidden');
+            const modalImg = document.getElementById('modalImage');
+            const modal = document.getElementById('imageModal');
+            if (modalImg && modal) {
+                modalImg.src = imgSrc;
+                modal.classList.remove('hidden');
+            }
         }
 
         function closeImageModal() {
-            document.getElementById('imageModal').classList.add('hidden');
+            const modal = document.getElementById('imageModal');
+            if (modal) modal.classList.add('hidden');
         }
 
         function updateHeaderInfo() {
             renderCatalog();
         }
 
-        function setViewMode(mode) {
-            viewMode = mode;
-            const btnA4 = document.getElementById('btnViewA4');
-            const btnGrid = document.getElementById('btnViewGrid');
-            const container = document.getElementById('catalogContainer');
-
-            if (mode === 'grid') {
-                btnGrid.className = "py-1.5 text-xs font-medium rounded-lg border border-red-500 bg-red-50 text-red-600 text-center";
-                btnA4.className = "py-1.5 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 text-center hover:bg-slate-50";
-                container.classList.remove('print-container');
-                container.classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'md:grid-cols-3', 'gap-4');
-            } else {
-                btnA4.className = "py-1.5 text-xs font-medium rounded-lg border border-red-500 bg-red-50 text-red-600 text-center";
-                btnGrid.className = "py-1.5 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 text-center hover:bg-slate-50";
-                container.className = "print-container";
-            }
-            renderCatalog();
-        }
-
         function openImportModal() {
-            document.getElementById('importModal').classList.remove('hidden');
+            const modal = document.getElementById('importModal');
+            if (modal) modal.classList.remove('hidden');
         }
 
         function closeImportModal() {
-            document.getElementById('importModal').classList.add('hidden');
+            const modal = document.getElementById('importModal');
+            if (modal) modal.classList.add('hidden');
         }
 
         function importFromExcelFile(event) {
