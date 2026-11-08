@@ -937,8 +937,8 @@
 
                 variantsHTML = `
                     ${sizeSummaryText ? `
-                        <div class="text-[9px] text-slate-600 font-medium truncate flex items-center gap-1 my-1 bg-slate-100/80 px-1.5 py-0.5 rounded border border-slate-200">
-                            <i class="fa-solid fa-box text-slate-400 text-[8px]"></i>
+                        <div class="text-[10px] text-slate-600 font-medium truncate flex items-center gap-1 my-1 bg-slate-100/80 px-1.5 py-0.5 rounded border border-slate-200">
+                            <i class="fa-solid fa-box text-slate-400 text-[9px]"></i>
                             <span class="truncate">ទំហំ/កេស: <b>${escapeHtml(sizeSummaryText)}</b></span>
                         </div>
                     ` : ''}
@@ -946,9 +946,11 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th class="whitespace-nowrap pr-1.5">កូដ / ID</th>
-                                    <th class="text-left">ឈ្មោះ / Description</th>
-                                    ${showPriceCol ? '<th class="text-right whitespace-nowrap pl-1">តម្លៃ (USD)</th>' : ''}
+                                    <!-- លេខកូដពណ៌ក្រហម -->
+                                    <th class="whitespace-nowrap pr-1.5 text-base font-black text-red-600">កូដ / ID</th>
+                                    <!-- ឈ្មោះពណ៌ខ្មៅធម្មតា -->
+                                    <th class="text-left text-base font-black text-slate-800">ឈ្មោះ / Description</th>
+                                    ${showPriceCol ? '<th class="text-right whitespace-nowrap pl-1 text-xs">តម្លៃ (USD)</th>' : ''}
                                 </tr>
                             </thead>
                             <tbody>
@@ -958,17 +960,19 @@
                                     let priceCell = '';
                                     
                                     if (priceType === 'sale') {
-                                        priceCell = `<td class="text-right whitespace-nowrap pl-1"><span class="font-bold text-red-600">${saleStr}</span></td>`;
+                                        priceCell = `<td class="text-right whitespace-nowrap pl-1"><span class="font-bold text-red-600 text-xs">${saleStr}</span></td>`;
                                     } else if (priceType === 'vip') {
-                                        priceCell = `<td class="text-right whitespace-nowrap pl-1"><span class="font-bold text-emerald-600">${vipStr}</span></td>`;
+                                        priceCell = `<td class="text-right whitespace-nowrap pl-1"><span class="font-bold text-emerald-600 text-xs">${vipStr}</span></td>`;
                                     } else if (priceType === 'both') {
-                                        priceCell = `<td class="text-right whitespace-nowrap pl-1"><span class="text-[8px] text-slate-400 line-through mr-0.5">${saleStr}</span><span class="font-bold text-red-600">${vipStr}</span></td>`;
+                                        priceCell = `<td class="text-right whitespace-nowrap pl-1"><span class="text-[9px] text-slate-400 line-through mr-0.5">${saleStr}</span><span class="font-bold text-red-600 text-xs">${vipStr}</span></td>`;
                                     }
 
                                     return `
                                         <tr>
-                                            <td class="font-mono font-bold text-slate-700 whitespace-nowrap pr-1.5">${escapeHtml(item.id)}</td>
-                                            <td class="truncate text-slate-800 font-medium" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</td>
+                                            <!-- លេខកូដពណ៌ក្រហម (text-base font-black text-red-600) -->
+                                            <td class="font-mono font-black text-red-600 whitespace-nowrap pr-1.5 text-base">${escapeHtml(item.id)}</td>
+                                            <!-- ឈ្មោះពណ៌ខ្មៅធម្មតា (text-base font-bold text-slate-800) -->
+                                            <td class="text-slate-800 font-bold text-base leading-snug py-1" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</td>
                                             ${showPriceCol ? priceCell : ''}
                                         </tr>
                                     `;
@@ -984,25 +988,26 @@
 
                 let priceDisplay = '';
                 if (priceType === 'sale') {
-                    priceDisplay = `<span class="text-red-600 font-extrabold text-sm md:text-base">${salePriceVal}</span>`;
+                    priceDisplay = `<span class="text-red-600 font-extrabold text-base md:text-lg">${salePriceVal}</span>`;
                 } else if (priceType === 'vip') {
-                    priceDisplay = `<span class="text-emerald-600 font-extrabold text-sm md:text-base">${vipPriceVal}</span>`;
+                    priceDisplay = `<span class="text-emerald-600 font-extrabold text-base md:text-lg">${vipPriceVal}</span>`;
                 } else if (priceType === 'both') {
                     priceDisplay = `
                         <div class="text-right leading-none">
-                            <span class="text-slate-400 text-[10px] line-through mr-1 font-medium">${salePriceVal}</span>
-                            <span class="text-red-600 font-extrabold text-sm md:text-base">${vipPriceVal}</span>
+                            <span class="text-slate-400 text-xs line-through mr-1 font-medium">${salePriceVal}</span>
+                            <span class="text-red-600 font-extrabold text-base md:text-lg">${vipPriceVal}</span>
                         </div>
                     `;
                 }
 
                 variantsHTML = `
-                    <div class="flex flex-col space-y-1 my-1">
-                        <div class="flex items-center justify-between text-[10px]">
-                            <span class="bg-slate-100 text-slate-700 font-mono font-bold px-1.5 py-0.5 rounded border border-slate-200">
+                    <div class="flex flex-col space-y-1.5 my-1">
+                        <div class="flex items-center justify-between">
+                            <!-- លេខកូដពណ៌ក្រហម -->
+                            <span class="bg-red-50 text-red-600 font-mono font-black px-2 py-1 rounded border border-red-200 text-base tracking-wide">
                                 ID: ${escapeHtml(single.id)}
                             </span>
-                            <span class="text-slate-500 font-medium">${escapeHtml(single.size || '1 Pcs')}</span>
+                            <span class="text-slate-600 font-bold text-xs">${escapeHtml(single.size || '1 Pcs')}</span>
                         </div>
                         ${priceType !== 'none' ? `
                             <div class="flex justify-end items-end pt-1">
@@ -1036,7 +1041,8 @@
                     </div>
 
                     <div class="flex flex-col justify-between flex-shrink-0">
-                        <h3 class="font-bold text-slate-800 text-[11px] leading-tight line-clamp-1" title="${escapeHtml(card.mainTitle)}">
+                        <!-- ឈ្មោះពណ៌ខ្មៅធម្មតា ធំជាងមុន ៣ ដង (text-base md:text-lg font-bold text-slate-800) -->
+                        <h3 class="font-bold text-slate-800 text-base leading-snug line-clamp-2" title="${escapeHtml(card.mainTitle)}">
                             ${escapeHtml(card.mainTitle)}
                         </h3>
                         ${variantsHTML}
