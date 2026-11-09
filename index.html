@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DADING SHOP - A4 Catalog Generator (4 ឬ 6 ផលិតផល/ទំព័រ)</title>
+    <title>DADING SHOP Catalog Generator (A5 & A4)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,7 +26,7 @@
             color: #1e293b;
         }
 
-        /* Screen & Print Strict A4 Canvas Container */
+        /* Screen & Print A4 Canvas Container */
         .a4-page {
             width: 210mm;
             height: 297mm;
@@ -47,7 +47,36 @@
             overflow: hidden;
         }
 
-        /* Product Card Styling */
+        /* Screen & Print A5 Canvas Container (1 item per page) */
+        .a5-page {
+            width: 148mm;
+            height: 210mm;
+            max-height: 210mm;
+            padding: 6mm 8mm 6mm 8mm;
+            margin: 0 auto 20px auto;
+            background: white;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            page-break-after: always;
+            break-after: page;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            overflow: hidden;
+        }
+
+        /* Responsive scaling helper for screen preview */
+        @media screen {
+            .page-preview-wrapper {
+                transform-origin: top center;
+                transition: transform 0.2s;
+            }
+        }
+
+        /* Product Card Styling for A4 */
         .product-card-a4 {
             border: 1px solid #cbd5e1;
             border-radius: 0.5rem;
@@ -64,7 +93,6 @@
             overflow: hidden;
         }
 
-        /* Maximized Image Container */
         .product-image-box {
             width: 100%;
             flex: 1 1 0px;
@@ -96,7 +124,6 @@
             transform: scale(1.03);
         }
 
-        /* Group Variant Table Styling inside Card */
         .variant-table-container {
             max-height: 110px;
             overflow-y: auto;
@@ -133,7 +160,6 @@
             border-bottom: none;
         }
 
-        /* Custom Scrollbar for Variant Tables */
         .variant-scroll::-webkit-scrollbar {
             width: 3px;
         }
@@ -145,7 +171,7 @@
         /* Print Media CSS Overrides */
         @media print {
             @page {
-                size: A4 portrait;
+                size: auto;
                 margin: 0;
             }
             body {
@@ -167,16 +193,23 @@
                 width: 210mm !important;
                 height: 297mm !important;
                 max-height: 297mm !important;
-                padding: 8mm 10mm 8mm 10mm !important;
                 page-break-after: always !important;
                 break-after: page !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
                 overflow: hidden !important;
             }
-            .variant-table-container {
-                max-height: none !important;
-                overflow: visible !important;
+            .a5-page {
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 148mm !important;
+                height: 210mm !important;
+                max-height: 210mm !important;
+                page-break-after: always !important;
+                break-after: page !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                overflow: hidden !important;
             }
         }
 
@@ -210,7 +243,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg leading-tight tracking-wide">DADING SHOP Catalog Generator</h1>
-                    <p class="text-xs text-slate-400">ប្រព័ន្ធបង្កើត A4 PDF (ជ្រើសរើស ៤ ឬ ៦ រូបក្នុង ១ ទំព័រ)</p>
+                    <p class="text-xs text-slate-400">ប្រព័ន្ធបង្កើតកាតាឡុក (A5 & A4)</p>
                 </div>
             </div>
 
@@ -284,25 +317,28 @@
                            class="w-4 h-4 text-red-600 rounded border-red-300 focus:ring-red-500 cursor-pointer">
                 </div>
                 <p class="text-[11px] text-slate-600 leading-tight">
-                    បើក៖ ផ្គុំផលិតផលដែលមាន Group Code ដូចគ្នាឱ្យនៅតែ ១ប្រអប់។
+                    បើក៖ ផ្គុំផលិតផលដែលមាន Group Code ដូចគ្នាឱ្យនៅតំបន់តែមួយ។
                 </p>
                 <div id="groupStatsBadge" class="text-[10px] font-medium text-red-700 bg-white/80 px-2 py-1 rounded border border-red-200 inline-block">
                     ចំនួនក្រុម៖ <span id="groupCountText" class="font-bold">0</span> ក្រុម (<span id="totalItemsText">0</span> មុខទំនិញ)
                 </div>
             </div>
 
-            <!-- Layout A4 Mode Selector (4 or 6 images) -->
+            <!-- Layout Mode Selector (A5 1-photo or A4 4/6 photos) -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-3">
                 <h2 class="font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2 text-xs">
                     <i class="fa-solid fa-file-lines text-red-500"></i>
-                    <span>ទម្រង់បង្ហាញក្នុង ១ ទំព័រ A4</span>
+                    <span>ទម្រង់ទំហំក្រដាស & បង្ហាញ</span>
                 </h2>
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="btnLayout4" onclick="setPageLayout(4)" class="py-2 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 text-center hover:bg-slate-50 transition">
-                        <i class="fa-solid fa-table-cells-large mr-1"></i> ៤ រូប / ទំព័រ
+                <div class="grid grid-cols-3 gap-1.5">
+                    <button id="btnLayoutA5" onclick="setPageLayout('A5')" class="py-2 px-1 text-[11px] font-bold rounded-lg border border-red-500 bg-red-50 text-red-600 text-center transition">
+                        <i class="fa-solid fa-file mr-0.5"></i> A5 (១រូប)
                     </button>
-                    <button id="btnLayout6" onclick="setPageLayout(6)" class="py-2 text-xs font-medium rounded-lg border border-red-500 bg-red-50 text-red-600 text-center transition">
-                        <i class="fa-solid fa-table-cells mr-1"></i> ៦ រូប / ទំព័រ
+                    <button id="btnLayout4" onclick="setPageLayout(4)" class="py-2 px-1 text-[11px] font-medium rounded-lg border border-slate-300 text-slate-600 text-center hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-table-cells-large mr-0.5"></i> A4 (៤រូប)
+                    </button>
+                    <button id="btnLayout6" onclick="setPageLayout(6)" class="py-2 px-1 text-[11px] font-medium rounded-lg border border-slate-300 text-slate-600 text-center hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-table-cells mr-0.5"></i> A4 (៦រូប)
                     </button>
                 </div>
             </div>
@@ -334,11 +370,11 @@
                 </div>
             </div>
 
-            <!-- Page Layout & Price Settings Card -->
+            <!-- Price & Header Settings Card -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-3">
                 <h2 class="font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2 text-xs">
                     <i class="fa-solid fa-sliders text-blue-500"></i>
-                    <span>ការកំណត់តម្លៃ & ក្បាលទំព័រ</span>
+                    <span>การកំណត់តម្លៃ & ក្បាលទំព័រ</span>
                 </h2>
 
                 <div>
@@ -352,7 +388,7 @@
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-xs font-semibold text-slate-600 block">ព័ត៌មានលើក្បាលទំព័រ A4៖</label>
+                    <label class="text-xs font-semibold text-slate-600 block">ព័ត៌មានលើក្បាលទំព័រ៖</label>
                     <input type="text" id="shopTitleInput" value="DADING SHOP (មានលក់ សម្ភារជាង ម៉ូទ័រBESTIR និងសម្ភារបន្ទប់ទឹក)" 
                         oninput="updateHeaderInfo()" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-1 focus:ring-red-500" placeholder="ឈ្មោះហាង">
                     <input type="text" id="shopContactInput" value="ទំនាក់ទំនង៖ 96 6760998 / Telegram: @DaDing_Boss" 
@@ -388,7 +424,7 @@
                 </div>
 
                 <div class="p-3 bg-red-50 border border-red-100 rounded-lg text-xs text-red-800 flex items-center justify-between">
-                    <span>ចំនួនទំព័រ A4 សរុប៖</span>
+                    <span>ចំនួនទំព័រសរុប៖</span>
                     <span id="pageCountSummary" class="font-bold text-sm">0 ទំព័រ</span>
                 </div>
             </div>
@@ -399,14 +435,14 @@
             <div class="no-print bg-white p-3 rounded-xl border border-slate-200 mb-4 flex items-center justify-between text-xs text-slate-600 flex-wrap gap-2">
                 <div>
                     <i class="fa-solid fa-circle-info text-blue-500 mr-1"></i>
-                    <span>ទម្រង់ទំព័រ៖ <b>A4 Portrait</b> | បង្ហាញ៖ <b id="layoutStatusText">៦ ប្រអប់/ទំព័រ</b></span>
+                    <span>ទម្រង់ទំព័រ៖ <b id="layoutStatusText">A5 (១ រូប/ទំព័រ)</b></span>
                 </div>
                 <div class="font-medium text-slate-800">
                     បង្ហាញ <span id="visibleItemsCount" class="text-red-600 font-bold">0</span> ប្រអប់
                 </div>
             </div>
 
-            <div id="catalogContainer" class="print-container">
+            <div id="catalogContainer" class="print-container flex flex-col items-center">
                 <!-- Pages generated dynamically -->
             </div>
         </section>
@@ -454,13 +490,6 @@
                     <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" onchange="importFromExcelFile(event)" 
                         class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
                 </div>
-
-                <div class="flex items-center justify-between pt-1">
-                    <span class="text-slate-500">ប្រើប្រាស់ទិន្នន័យគំរូដើម៖</span>
-                    <button onclick="loadSampleData(); closeImportModal();" class="text-red-600 hover:text-red-700 font-semibold underline">
-                        ផ្ទុកទិន្នន័យគំរូឡើងវិញ
-                    </button>
-                </div>
             </div>
 
             <div class="bg-slate-50 px-6 py-3 flex justify-end">
@@ -472,17 +501,15 @@
     </div>
 
     <script>
-        // Application State Variables
         let allProducts = [];
         let groupedProductCards = []; 
         let selectedGroupIds = new Set();
         let selectedCategories = new Set();
         let isGroupModeEnabled = true;
-        let itemsPerPage = 6; // Default 6 items per A4 page (can be 4 or 6)
+        let currentLayoutMode = 'A5'; // Default A5 (1 photo per page) or 4 or 6
 
         const DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/1iXLoDPlNtwBr-jfIR8Nd73dxarb9kfv5o3r3MCRCqIo/edit?usp=sharing";
 
-        // Convert Google Sheet URL to CSV export URL
         function getGoogleSheetCsvUrl(rawUrl) {
             if (!rawUrl) return '';
             let cleanUrl = rawUrl.trim();
@@ -502,7 +529,6 @@
             return cleanUrl;
         }
 
-        // Clean & Fix Image Links
         function sanitizeImageUrl(url) {
             if (!url) return '';
             let cleanUrl = String(url).trim().replace(/^['"]|['"]$/g, '');
@@ -522,7 +548,6 @@
             return cleanUrl;
         }
 
-        // Fetch Data from Google Sheet
         async function importFromGSheetLink(targetUrl) {
             const rawUrl = targetUrl || document.getElementById('gsheetUrlInputMain').value.trim();
             if (!rawUrl) {
@@ -560,7 +585,7 @@
 
                 if (csvText && csvText.trim().length > 0) {
                     parseAndSetCSVData(csvText);
-                    showStatus('ទាញយកទិន្នន័យពី Google Sheet បានជោគជ័យ!', 'success');
+                    showStatus('ទាញយកទិន្នន័យពី Google Sheet ได้ជោគជ័យ!', 'success');
                 } else {
                     throw new Error('ទិន្នន័យទទេ');
                 }
@@ -576,21 +601,26 @@
             importFromGSheetLink(DEFAULT_SHEET_URL);
         });
 
-        // Function to switch between 4 images and 6 images layout per A4 page
-        function setPageLayout(count) {
-            itemsPerPage = count;
+        function setPageLayout(mode) {
+            currentLayoutMode = mode;
+            const btnA5 = document.getElementById('btnLayoutA5');
             const btn4 = document.getElementById('btnLayout4');
             const btn6 = document.getElementById('btnLayout6');
             const statusText = document.getElementById('layoutStatusText');
 
-            if (count === 4) {
-                btn4.className = "py-2 text-xs font-medium rounded-lg border border-red-500 bg-red-50 text-red-600 text-center transition";
-                btn6.className = "py-2 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 text-center hover:bg-slate-50 transition";
-                if (statusText) statusText.innerText = "៤ ប្រអប់/ទំព័រ (រូបភាពធំ)";
+            btnA5.className = "py-2 px-1 text-[11px] font-medium rounded-lg border border-slate-300 text-slate-600 text-center hover:bg-slate-50 transition";
+            btn4.className = "py-2 px-1 text-[11px] font-medium rounded-lg border border-slate-300 text-slate-600 text-center hover:bg-slate-50 transition";
+            btn6.className = "py-2 px-1 text-[11px] font-medium rounded-lg border border-slate-300 text-slate-600 text-center hover:bg-slate-50 transition";
+
+            if (mode === 'A5') {
+                btnA5.className = "py-2 px-1 text-[11px] font-bold rounded-lg border border-red-500 bg-red-50 text-red-600 text-center transition";
+                if (statusText) statusText.innerText = "A5 (១ រូប/ទំព័រ)";
+            } else if (mode === 4) {
+                btn4.className = "py-2 px-1 text-[11px] font-bold rounded-lg border border-red-500 bg-red-50 text-red-600 text-center transition";
+                if (statusText) statusText.innerText = "A4 (៤ ប្រអប់/ទំព័រ)";
             } else {
-                btn6.className = "py-2 text-xs font-medium rounded-lg border border-red-500 bg-red-50 text-red-600 text-center transition";
-                btn4.className = "py-2 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 text-center hover:bg-slate-50 transition";
-                if (statusText) statusText.innerText = "៦ ប្រអប់/ទំព័រ";
+                btn6.className = "py-2 px-1 text-[11px] font-bold rounded-lg border border-red-500 bg-red-50 text-red-600 text-center transition";
+                if (statusText) statusText.innerText = "A4 (៦ ប្រអប់/ទំព័រ)";
             }
             renderCatalog();
         }
@@ -725,17 +755,6 @@
             if (totalItemsEl) totalItemsEl.innerText = allProducts.length;
         }
 
-        function loadSampleData() {
-            allProducts = JSON.parse(JSON.stringify([
-                { id: "DA003", groupCode: "DA-CUTTER", name: "កន្ត្រៃកាត់ដែក 断线剪 450mm-18\"", size: "450mm-18\"", price: 7.00, vipPrice: 5.60, category: "ប្រដាប់ប្រដាជាង", photo: "https://i.ibb.co/b5wgD5W/BE-P3006.jpg" },
-                { id: "DA004", groupCode: "DA-CUTTER", name: "កន្ត្រៃកាត់ដែក 断线剪 600mm-24\"", size: "600mm-24\"", price: 9.00, vipPrice: 7.20, category: "ប្រដាប់ប្រដាជាង", photo: "https://i.ibb.co/b5wgD5W/BE-P3006.jpg" },
-                { id: "BE610207", groupCode: "BE-DRILL-21V", name: "ម៉ូទ័រស្វានកាតប្រហោងថ្ម 锂电扳手 (21V / 1000N.M)", size: "6.0Ah", price: 108.00, vipPrice: 85.00, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/r2WkJGb6/BE610207.jpg" }
-            ]));
-            buildGroupedProductCards();
-            populateCategories();
-            renderCatalog();
-        }
-
         function populateCategories() {
             const container = document.getElementById('categoryCheckboxContainer');
             if (!container) return;
@@ -851,8 +870,14 @@
             const summaryEl = document.getElementById('pageCountSummary');
 
             if (badgeEl) badgeEl.innerText = `${count} បានជ្រើសរើស`;
-            const totalPages = Math.ceil(count / itemsPerPage);
-            if (summaryEl) summaryEl.innerText = `${totalPages} ទំព័រ A4`;
+            
+            let totalPages = 0;
+            if (currentLayoutMode === 'A5') {
+                totalPages = count;
+            } else {
+                totalPages = Math.ceil(count / currentLayoutMode);
+            }
+            if (summaryEl) summaryEl.innerText = `${totalPages} ទំព័រ`;
         }
 
         function renderCatalog() {
@@ -869,10 +894,9 @@
 
             if (selectedCardsList.length === 0) {
                 container.innerHTML = `
-                    <div class="bg-white rounded-xl p-12 text-center text-slate-400 my-8 shadow-sm border border-slate-200">
+                    <div class="bg-white rounded-xl p-12 text-center text-slate-400 my-8 shadow-sm border border-slate-200 max-w-md w-full">
                         <i class="fa-solid fa-box-open text-5xl mb-3 text-slate-300"></i>
-                        <p class="font-medium text-sm">មិនទាន់មានប្រអប់ផលិតផលត្រូវបានជ្រើសរើសសម្រាប់បង្កើត PDF ទេ។</p>
-                        <p class="text-xs text-slate-400 mt-1">សូមជ្រើសរើសប្រភេទទំនិញ (Category) ឬ ស្វែងរកតាមឈ្មោះ/លេខកូដ។</p>
+                        <p class="font-medium text-sm">មិនទាន់មានប្រអប់ផលិតផលត្រូវបានជ្រើសរើសសម្រាប់បង្កើតកាតាឡុកទេ។</p>
                     </div>
                 `;
                 return;
@@ -886,44 +910,181 @@
             const shopTitle = shopTitleInput ? shopTitleInput.value : '';
             const shopContact = shopContactInput ? shopContactInput.value : '';
 
-            const chunkSize = itemsPerPage; 
-            const totalPages = Math.ceil(selectedCardsList.length / chunkSize);
+            if (currentLayoutMode === 'A5') {
+                // A5: 1 card per page
+                selectedCardsList.forEach((card, idx) => {
+                    const pageEl = document.createElement('div');
+                    pageEl.className = 'a5-page';
+                    pageEl.innerHTML = renderA5SinglePageContent(card, priceType, shopTitle, shopContact, idx + 1, selectedCardsList.length);
+                    container.appendChild(pageEl);
+                });
+            } else {
+                // A4: 4 or 6 cards per page
+                const chunkSize = currentLayoutMode;
+                const totalPages = Math.ceil(selectedCardsList.length / chunkSize);
 
-            for (let pageIdx = 0; pageIdx < totalPages; pageIdx++) {
-                const pageCards = selectedCardsList.slice(pageIdx * chunkSize, (pageIdx + 1) * chunkSize);
-                
-                const pageEl = document.createElement('div');
-                pageEl.className = 'a4-page';
+                for (let pageIdx = 0; pageIdx < totalPages; pageIdx++) {
+                    const pageCards = selectedCardsList.slice(pageIdx * chunkSize, (pageIdx + 1) * chunkSize);
+                    const pageEl = document.createElement('div');
+                    pageEl.className = 'a4-page';
+                    const rowCount = chunkSize === 4 ? 2 : 3;
 
-                // Grid template rows: 2 rows if 4 items per page, 3 rows if 6 items per page
-                const rowCount = itemsPerPage === 4 ? 2 : 3;
-
-                pageEl.innerHTML = `
-                    <div class="border-b-2 border-red-600 pb-1.5 mb-1 flex justify-between items-end flex-shrink-0">
-                        <div>
-                            <h1 class="font-bold text-red-600 text-sm md:text-base leading-tight uppercase tracking-tight">${escapeHtml(shopTitle)}</h1>
-                            <p class="text-[10px] text-slate-600">${escapeHtml(shopContact)}</p>
+                    pageEl.innerHTML = `
+                        <div class="border-b-2 border-red-600 pb-1.5 mb-1 flex justify-between items-end flex-shrink-0">
+                            <div>
+                                <h1 class="font-bold text-red-600 text-sm md:text-base leading-tight uppercase tracking-tight">${escapeHtml(shopTitle)}</h1>
+                                <p class="text-[10px] text-slate-600">${escapeHtml(shopContact)}</p>
+                            </div>
+                            <div class="text-right text-[10px] text-slate-400 font-medium">
+                                ទំព័រទី ${pageIdx + 1} នៃ ${totalPages}
+                            </div>
                         </div>
-                        <div class="text-right text-[10px] text-slate-400 font-medium">
-                            ទំព័រទី ${pageIdx + 1} នៃ ${totalPages}
+
+                        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(${rowCount}, minmax(0, 1fr)); gap: 8px; flex: 1 1 0px; min-height: 0; margin-top: 4px; margin-bottom: 4px; overflow: hidden;">
+                            ${pageCards.map(c => renderGroupProductCardA4(c, priceType)).join('')}
                         </div>
-                    </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(${rowCount}, minmax(0, 1fr)); gap: 8px; flex: 1 1 0px; min-height: 0; margin-top: 4px; margin-bottom: 4px; overflow: hidden;">
-                        ${pageCards.map(c => renderGroupProductCard(c, priceType)).join('')}
-                    </div>
+                        <div class="border-t border-slate-200 pt-1.5 mt-1 flex justify-between items-center text-[9px] text-slate-400 flex-shrink-0">
+                            <span>DADING SHOP Catalog System</span>
+                            <span>ថ្ងៃបោះពុម្ព៖ ${new Date().toLocaleDateString('km-KH')}</span>
+                        </div>
+                    `;
 
-                    <div class="border-t border-slate-200 pt-1.5 mt-1 flex justify-between items-center text-[9px] text-slate-400 flex-shrink-0">
-                        <span>DADING SHOP Product Catalog System</span>
-                        <span>ថ្ងៃបោះពុម្ព៖ ${new Date().toLocaleDateString('km-KH')}</span>
-                    </div>
-                `;
-
-                container.appendChild(pageEl);
+                    container.appendChild(pageEl);
+                }
             }
         }
 
-        function renderGroupProductCard(card, priceType) {
+        function renderA5SinglePageContent(card, priceType, shopTitle, shopContact, pageNum, totalPages) {
+            const imageUrl = card.mainImage || 'https://placehold.co/600x500/ffffff/e2e8f0?text=No+Photo';
+            const isMultiVariant = card.items.length > 1;
+            const uniqueSizesForTop = [...new Set(card.items.map(i => i.size).filter(Boolean))].join(' | ');
+
+            let variantsHTML = '';
+
+            if (isMultiVariant) {
+                const showPriceCol = priceType !== 'none';
+                variantsHTML = `
+                    <div class="overflow-y-auto max-h-[160px] border-2 border-slate-300 rounded-xl bg-slate-50 p-2">
+                        <table class="w-full border-collapse text-sm">
+                            <thead>
+                                <tr class="border-b-2 border-slate-300">
+                                    <th class="text-left font-black text-red-600 p-2 text-xl">លេខកូដ ID</th>
+                                    <th class="text-left font-black text-slate-900 p-2 text-xl">ឈ្មោះ / Description</th>
+                                    ${showPriceCol ? '<th class="text-right font-black text-slate-900 p-2 text-xl">តម្លៃ (USD)</th>' : ''}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${card.items.map(item => {
+                                    const saleStr = `$${item.price.toFixed(2)}`;
+                                    const vipStr = `$${item.vipPrice.toFixed(2)}`;
+                                    let priceCell = '';
+                                    if (priceType === 'sale') {
+                                        priceCell = `<td class="text-right font-bold text-red-600 text-xl p-2">${saleStr}</td>`;
+                                    } else if (priceType === 'vip') {
+                                        priceCell = `<td class="text-right font-bold text-emerald-600 text-xl p-2">${vipStr}</td>`;
+                                    } else if (priceType === 'both') {
+                                        priceCell = `
+                                            <td class="text-right p-2">
+                                                <span class="text-base text-slate-400 line-through mr-2">${saleStr}</span>
+                                                <span class="font-black text-red-600 text-2xl">${vipStr}</span>
+                                            </td>
+                                        `;
+                                    }
+                                    return `
+                                        <tr class="border-b border-slate-200/80 last:border-0">
+                                            <td class="font-mono font-black text-red-600 text-2xl p-2 whitespace-nowrap">${escapeHtml(item.id)}</td>
+                                            <td class="font-bold text-slate-900 text-lg p-2">${escapeHtml(item.name)} ${item.size ? `<span class="text-base text-slate-600 font-semibold">(${escapeHtml(item.size)})</span>` : ''}</td>
+                                            ${showPriceCol ? priceCell : ''}
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } else {
+                const single = card.items[0];
+                const salePriceVal = single.price ? `$${single.price.toFixed(2)}` : '$0.00';
+                const vipPriceVal = single.vipPrice ? `$${single.vipPrice.toFixed(2)}` : salePriceVal;
+
+                let priceDisplay = '';
+                if (priceType === 'sale') {
+                    priceDisplay = `<span class="text-red-600 font-black text-3xl md:text-4xl">${salePriceVal}</span>`;
+                } else if (priceType === 'vip') {
+                    priceDisplay = `<span class="text-emerald-600 font-black text-3xl md:text-4xl">${vipPriceVal}</span>`;
+                } else if (priceType === 'both') {
+                    priceDisplay = `
+                        <div class="text-right leading-tight">
+                            <span class="text-slate-400 text-lg line-through mr-3 font-medium">${salePriceVal}</span>
+                            <span class="text-red-600 font-black text-3xl md:text-4xl">${vipPriceVal}</span>
+                        </div>
+                    `;
+                }
+
+                variantsHTML = `
+                    <div class="flex items-center justify-between bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 my-2">
+                        <div>
+                            <div class="font-mono font-black text-red-600 text-3xl md:text-4xl tracking-wide">
+                                ${escapeHtml(single.id)}
+                            </div>
+                        </div>
+                        ${priceType !== 'none' ? `
+                            <div class="text-right">
+                                ${priceDisplay}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="border-b-2 border-red-600 pb-2 mb-2 flex justify-between items-end flex-shrink-0">
+                    <div>
+                        <h1 class="font-bold text-red-600 text-xs md:text-sm leading-tight uppercase tracking-tight">${escapeHtml(shopTitle)}</h1>
+                        <p class="text-[10px] text-slate-600">${escapeHtml(shopContact)}</p>
+                    </div>
+                    <div class="text-right text-[10px] text-slate-400 font-medium">
+                        ទំព័រទី ${pageNum} នៃ ${totalPages}
+                    </div>
+                </div>
+
+                <div class="flex-grow flex flex-col justify-between relative bg-white border border-slate-200 rounded-xl p-3 my-1 overflow-hidden">
+                    <div class="no-print absolute top-3 right-3 z-10 flex items-center gap-2 bg-white/95 px-3 py-1.5 rounded-lg border border-slate-300 shadow-sm">
+                        ${uniqueSizesForTop ? `<span class="text-xs font-bold text-slate-700">${escapeHtml(uniqueSizesForTop)}</span>` : ''}
+                        <input type="checkbox" ${selectedGroupIds.has(card.cardId) ? 'checked' : ''} onchange="toggleSelectGroup('${escapeHtml(card.cardId)}')" 
+                            class="w-4 h-4 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer block">
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs mb-1">
+                        <span class="bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded border border-red-100 uppercase">
+                            ${escapeHtml(card.category)}
+                        </span>
+                        ${card.groupCode ? `<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-mono">Group: ${escapeHtml(card.groupCode)}</span>` : ''}
+                    </div>
+
+                    <div class="w-full flex-1 flex items-center justify-center bg-white border border-slate-100 rounded-lg p-2 my-2 cursor-pointer overflow-hidden min-h-0" onclick="openImageModal('${escapeHtml(imageUrl)}')">
+                        <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(card.mainTitle)}" referrerpolicy="no-referrer"
+                             class="max-h-full max-w-full object-contain hover:scale-105 transition duration-200"
+                             onerror="this.onerror=null; this.src='https://placehold.co/600x500/ffffff/e2e8f0?text=Image+Error';">
+                    </div>
+
+                    <div class="flex flex-col space-y-2 flex-shrink-0">
+                        <h2 class="font-extrabold text-slate-900 text-xl md:text-2xl leading-snug line-clamp-2" title="${escapeHtml(card.mainTitle)}">
+                            ${escapeHtml(card.mainTitle)}
+                        </h2>
+                        ${variantsHTML}
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-200 pt-1.5 mt-1 flex justify-between items-center text-[9px] text-slate-400 flex-shrink-0">
+                    <span>DADING SHOP Catalog System (A5 Format)</span>
+                    <span>ថ្ងៃបោះពុម្ព៖ ${new Date().toLocaleDateString('km-KH')}</span>
+                </div>
+            `;
+        }
+
+        function renderGroupProductCardA4(card, priceType) {
             const imageUrl = card.mainImage || 'https://placehold.co/400x350/ffffff/e2e8f0?text=No+Photo';
             const isMultiVariant = card.items.length > 1;
 
@@ -936,19 +1097,11 @@
                 const showPriceCol = priceType !== 'none';
 
                 variantsHTML = `
-                    ${sizeSummaryText ? `
-                        <div class="text-[10px] text-slate-600 font-medium truncate flex items-center gap-1 my-1 bg-slate-100/80 px-1.5 py-0.5 rounded border border-slate-200">
-                            <i class="fa-solid fa-box text-slate-400 text-[9px]"></i>
-                            <span class="truncate">ទំហំ/កេស: <b>${escapeHtml(sizeSummaryText)}</b></span>
-                        </div>
-                    ` : ''}
                     <div class="variant-table-container variant-scroll my-1">
                         <table>
                             <thead>
                                 <tr>
-                                    <!-- លេខកូដពណ៌ក្រហម -->
                                     <th class="whitespace-nowrap pr-1.5 text-base font-black text-red-600">កូដ / ID</th>
-                                    <!-- ឈ្មោះពណ៌ខ្មៅធម្មតា -->
                                     <th class="text-left text-base font-black text-slate-800">ឈ្មោះ / Description</th>
                                     ${showPriceCol ? '<th class="text-right whitespace-nowrap pl-1 text-xs">តម្លៃ (USD)</th>' : ''}
                                 </tr>
@@ -969,9 +1122,7 @@
 
                                     return `
                                         <tr>
-                                            <!-- លេខកូដពណ៌ក្រហម (text-base font-black text-red-600) -->
                                             <td class="font-mono font-black text-red-600 whitespace-nowrap pr-1.5 text-base">${escapeHtml(item.id)}</td>
-                                            <!-- ឈ្មោះពណ៌ខ្មៅធម្មតា (text-base font-bold text-slate-800) -->
                                             <td class="text-slate-800 font-bold text-base leading-snug py-1" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</td>
                                             ${showPriceCol ? priceCell : ''}
                                         </tr>
@@ -1001,16 +1152,12 @@
                 }
 
                 variantsHTML = `
-                    <div class="flex flex-col space-y-1.5 my-1">
-                        <div class="flex items-center justify-between">
-                            <!-- លេខកូដពណ៌ក្រហម -->
-                            <span class="bg-red-50 text-red-600 font-mono font-black px-2 py-1 rounded border border-red-200 text-base tracking-wide">
-                                ID: ${escapeHtml(single.id)}
-                            </span>
-                            <span class="text-slate-600 font-bold text-xs">${escapeHtml(single.size || '1 Pcs')}</span>
-                        </div>
+                    <div class="flex items-center justify-between my-0.5">
+                        <span class="text-red-600 font-mono font-black text-base md:text-lg tracking-wide">
+                            ${escapeHtml(single.id)}
+                        </span>
                         ${priceType !== 'none' ? `
-                            <div class="flex justify-end items-end pt-1">
+                            <div>
                                 ${priceDisplay}
                             </div>
                         ` : ''}
@@ -1020,8 +1167,9 @@
 
             return `
                 <div class="product-card-a4 relative">
-                    <div class="no-print absolute top-1.5 right-1.5 z-10 bg-white/90 p-0.5 rounded border border-slate-200 shadow-sm">
-                        <input type="checkbox" checked onchange="toggleSelectGroup('${escapeHtml(card.cardId)}')" 
+                    <div class="no-print absolute top-1.5 right-1.5 z-10 flex items-center gap-1.5 bg-white/95 px-2 py-1 rounded-md border border-slate-200 shadow-sm">
+                        ${sizeSummaryText ? `<span class="text-[10px] font-bold text-slate-700">${escapeHtml(sizeSummaryText)}</span>` : ''}
+                        <input type="checkbox" ${selectedGroupIds.has(card.cardId) ? 'checked' : ''} onchange="toggleSelectGroup('${escapeHtml(card.cardId)}')" 
                             class="w-3.5 h-3.5 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer block">
                     </div>
 
@@ -1041,7 +1189,6 @@
                     </div>
 
                     <div class="flex flex-col justify-between flex-shrink-0">
-                        <!-- ឈ្មោះពណ៌ខ្មៅធម្មតា ធំជាងមុន ៣ ដង (text-base md:text-lg font-bold text-slate-800) -->
                         <h3 class="font-bold text-slate-800 text-base leading-snug line-clamp-2" title="${escapeHtml(card.mainTitle)}">
                             ${escapeHtml(card.mainTitle)}
                         </h3>
