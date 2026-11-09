@@ -68,11 +68,17 @@
             overflow: hidden;
         }
 
-        /* Responsive scaling helper for screen preview */
+        /* Responsive Preview Scaling for Screen View to Prevent Cut-off */
         @media screen {
-            .page-preview-wrapper {
+            .print-container .a4-page {
+                transform: scale(0.82);
                 transform-origin: top center;
-                transition: transform 0.2s;
+                margin-bottom: -45px;
+            }
+            .print-container .a5-page {
+                transform: scale(0.9);
+                transform-origin: top center;
+                margin-bottom: -20px;
             }
         }
 
@@ -80,7 +86,7 @@
         .product-card-a4 {
             border: 1px solid #cbd5e1;
             border-radius: 0.5rem;
-            padding: 0.5rem;
+            padding: 0.4rem;
             background-color: #ffffff;
             display: flex;
             flex-direction: column;
@@ -106,7 +112,7 @@
             padding: 2px;
             overflow: hidden;
             margin-top: 2px;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             cursor: pointer;
             position: relative;
         }
@@ -125,7 +131,7 @@
         }
 
         .variant-table-container {
-            max-height: 110px;
+            max-height: 95px;
             overflow-y: auto;
             border: 1px solid #e2e8f0;
             border-radius: 0.375rem;
@@ -135,19 +141,8 @@
         .variant-table-container table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 9px;
+            font-size: 10px;
             table-layout: auto;
-        }
-
-        .variant-table-container th {
-            background-color: #e2e8f0;
-            color: #334155;
-            font-weight: 700;
-            padding: 2px 4px;
-            text-align: left;
-            position: sticky;
-            top: 0;
-            z-index: 1;
         }
 
         .variant-table-container td {
@@ -187,9 +182,10 @@
                 margin: 0 !important;
                 width: 100% !important;
             }
-            .a4-page {
-                box-shadow: none !important;
+            .print-container .a4-page {
+                transform: none !important;
                 margin: 0 !important;
+                box-shadow: none !important;
                 width: 210mm !important;
                 height: 297mm !important;
                 max-height: 297mm !important;
@@ -199,9 +195,10 @@
                 break-inside: avoid !important;
                 overflow: hidden !important;
             }
-            .a5-page {
-                box-shadow: none !important;
+            .print-container .a5-page {
+                transform: none !important;
                 margin: 0 !important;
+                box-shadow: none !important;
                 width: 148mm !important;
                 height: 210mm !important;
                 max-height: 210mm !important;
@@ -311,13 +308,13 @@
                 <div class="flex items-center justify-between">
                     <label for="groupModeToggle" class="font-bold text-red-900 text-xs flex items-center gap-2 cursor-pointer">
                         <i class="fa-solid fa-object-group text-red-600 text-sm"></i>
-                        <span>ផ្គុំតាម Group Code</span>
+                        <span>ផ្គុំតាម Group Code (អតិបរមា ៣ ប្រភេទ/កាត)</span>
                     </label>
                     <input type="checkbox" id="groupModeToggle" checked onchange="toggleGroupMode()" 
                            class="w-4 h-4 text-red-600 rounded border-red-300 focus:ring-red-500 cursor-pointer">
                 </div>
                 <p class="text-[11px] text-slate-600 leading-tight">
-                    បើក៖ ផ្គុំផលិតផលដែលមាន Group Code ដូចគ្នាឱ្យនៅតំបន់តែមួយ។
+                    បើក៖ ផ្គុំផលិតផលដែលមាន Group Code (បែងចែកយ៉ាងច្រើន ៣ ក្នុង១កាត)។
                 </p>
                 <div id="groupStatsBadge" class="text-[10px] font-medium text-red-700 bg-white/80 px-2 py-1 rounded border border-red-200 inline-block">
                     ចំនួនក្រុម៖ <span id="groupCountText" class="font-bold">0</span> ក្រុម (<span id="totalItemsText">0</span> មុខទំនិញ)
@@ -374,7 +371,7 @@
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-3">
                 <h2 class="font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2 text-xs">
                     <i class="fa-solid fa-sliders text-blue-500"></i>
-                    <span>การកំណត់តម្លៃ & ក្បាលទំព័រ</span>
+                    <span>ការកំណត់តម្លៃ & ក្បាលទំព័រ</span>
                 </h2>
 
                 <div>
@@ -506,7 +503,7 @@
         let selectedGroupIds = new Set();
         let selectedCategories = new Set();
         let isGroupModeEnabled = true;
-        let currentLayoutMode = 'A5'; // Default A5 (1 photo per page) or 4 or 6
+        let currentLayoutMode = 'A5'; // Default A5 or 4 or 6
 
         const DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/1iXLoDPlNtwBr-jfIR8Nd73dxarb9kfv5o3r3MCRCqIo/edit?usp=sharing";
 
@@ -585,7 +582,7 @@
 
                 if (csvText && csvText.trim().length > 0) {
                     parseAndSetCSVData(csvText);
-                    showStatus('ទាញយកទិន្នន័យពី Google Sheet ได้ជោគជ័យ!', 'success');
+                    showStatus('ទាញយកទិន្នន័យពី Google Sheet បានជោគជ័យ!', 'success');
                 } else {
                     throw new Error('ទិន្នន័យទទេ');
                 }
@@ -743,7 +740,24 @@
                             card.mainTitle = commonName.trim();
                         }
                     }
-                    groupedProductCards.push(card);
+
+                    // Auto-split large groups so max 3 items per card
+                    const MAX_PER_CARD = 3;
+                    if (card.items.length > MAX_PER_CARD) {
+                        for (let i = 0; i < card.items.length; i += MAX_PER_CARD) {
+                            const chunk = card.items.slice(i, i + MAX_PER_CARD);
+                            groupedProductCards.push({
+                                cardId: `${card.cardId}__part${Math.floor(i/MAX_PER_CARD) + 1}`,
+                                groupCode: card.groupCode,
+                                category: card.category,
+                                mainTitle: card.mainTitle,
+                                mainImage: card.mainImage,
+                                items: chunk
+                            });
+                        }
+                    } else {
+                        groupedProductCards.push(card);
+                    }
                 });
             }
 
@@ -751,7 +765,7 @@
 
             const groupCountEl = document.getElementById('groupCountText');
             const totalItemsEl = document.getElementById('totalItemsText');
-            if (groupCountEl) groupCountEl.innerText = groupedProductCards.filter(c => c.items.length > 1).length;
+            if (groupCountEl) groupCountEl.innerText = groupedProductCards.length;
             if (totalItemsEl) totalItemsEl.innerText = allProducts.length;
         }
 
@@ -911,7 +925,6 @@
             const shopContact = shopContactInput ? shopContactInput.value : '';
 
             if (currentLayoutMode === 'A5') {
-                // A5: 1 card per page
                 selectedCardsList.forEach((card, idx) => {
                     const pageEl = document.createElement('div');
                     pageEl.className = 'a5-page';
@@ -919,7 +932,6 @@
                     container.appendChild(pageEl);
                 });
             } else {
-                // A4: 4 or 6 cards per page
                 const chunkSize = currentLayoutMode;
                 const totalPages = Math.ceil(selectedCardsList.length / chunkSize);
 
@@ -1099,13 +1111,6 @@
                 variantsHTML = `
                     <div class="variant-table-container variant-scroll my-1">
                         <table>
-                            <thead>
-                                <tr>
-                                    <th class="whitespace-nowrap pr-1.5 text-base font-black text-red-600">កូដ / ID</th>
-                                    <th class="text-left text-base font-black text-slate-800">ឈ្មោះ / Description</th>
-                                    ${showPriceCol ? '<th class="text-right whitespace-nowrap pl-1 text-xs">តម្លៃ (USD)</th>' : ''}
-                                </tr>
-                            </thead>
                             <tbody>
                                 ${card.items.map(item => {
                                     const saleStr = `$${item.price.toFixed(2)}`;
@@ -1122,7 +1127,7 @@
 
                                     return `
                                         <tr>
-                                            <td class="font-mono font-black text-red-600 whitespace-nowrap pr-1.5 text-base">${escapeHtml(item.id)}</td>
+                                            <td class="font-mono font-black text-red-600 whitespace-nowrap pr-1.5 text-base w-[30%]">${escapeHtml(item.id)}</td>
                                             <td class="text-slate-800 font-bold text-base leading-snug py-1" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</td>
                                             ${showPriceCol ? priceCell : ''}
                                         </tr>
