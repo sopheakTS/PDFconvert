@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DADING SHOP Catalog Generator</title>
+    <title>DADING SHOP Catalog Generator (A5 & A4)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -240,7 +240,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg leading-tight tracking-wide">DADING SHOP Catalog Generator</h1>
-                    <p class="text-xs text-slate-400">ប្រព័ន្ធបង្កើតកាតាឡុក</p>
+                    <p class="text-xs text-slate-400">ប្រព័ន្ធបង្កើតកាតាឡុក (A5 & A4)</p>
                 </div>
             </div>
 
@@ -380,6 +380,7 @@
                         <option value="both">បង្ហាញតម្លៃទាំងពីរ (Sale & VIP)</option>
                         <option value="sale">បង្ហាញតែ តម្លៃលក់ (Sale Price)</option>
                         <option value="vip">បង្ហាញតែ តម្លៃ VIP (VIP Price)</option>
+                        <option value="vip1">បង្ហាញតែ តម្លៃ​ VIP10%</option>
                         <option value="none">មិនបង្ហាញតម្លៃ (លុបតម្លៃចេញ)</option>
                     </select>
                 </div>
@@ -388,7 +389,7 @@
                     <label class="text-xs font-semibold text-slate-600 block">ព័ត៌មានលើក្បាលទំព័រ៖</label>
                     <input type="text" id="shopTitleInput" value="DADING SHOP (មានលក់ សម្ភារជាង ម៉ូទ័រBESTIR និងសម្ភារបន្ទប់ទឹក)" 
                         oninput="updateHeaderInfo()" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-1 focus:ring-red-500" placeholder="ឈ្មោះហាង">
-                    <input type="text" id="shopContactInput" value="ទំនាក់ទំនង៖ 096 6760998 / Telegram: @DaDing_Boss" 
+                    <input type="text" id="shopContactInput" value="ទំនាក់ទំនង៖ 96 6760998 / Telegram: @DaDing_Boss" 
                         oninput="updateHeaderInfo()" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-1 focus:ring-red-500" placeholder="លេខទូរស័ព្ទ">
                 </div>
             </div>
@@ -650,6 +651,7 @@
                 const sizeKey = findKey(['variant', 'size', 'ទំហំ', 'spec']) || keys[2];
                 const priceKey = findKey(['saleprice', 'sale price', 'price', 'តម្លៃលក់', 'តម្លៃ']) || keys[3];
                 const vipKey = findKey(['vipprice', 'vip price', 'vip', 'តម្លៃvip']) || keys[4];
+                const vip1Key = findKey(['vip1', 'vip 1', 'តម្លៃពិសេស', 'តម្លៃvip1']) || keys[9] || keys[10]; // Column J (VIP1)
                 const categoryKey = findKey(['category', 'ប្រភេទទំនិញ', 'ប្រភេទ']) || keys[5];
                 const photoKey = findKey(['linkphoto', 'photo', 'image', 'img', 'picture', 'រូបភាព']) || keys.find(k => String(r[k]).startsWith('http'));
                 const groupCodeKey = findKey(['groupcode', 'group code', 'group_code', 'group', 'កូដក្រុម']) || keys.find(k => String(k).toLowerCase().includes('group'));
@@ -670,12 +672,24 @@
                     size: String(r[sizeKey] || '').trim(),
                     price: cleanPrice(r[priceKey]),
                     vipPrice: cleanPrice(r[vipKey]),
+                    vip1Price: cleanPrice(r[vip1Key]),
                     category: String(r[categoryKey] || 'ផ្សេងៗ').trim(),
                     photo: sanitizeImageUrl(rawPhoto)
                 };
             }).filter(p => p.name !== 'គ្មានឈ្មោះ');
 
             allProducts = mapped;
+            buildGroupedProductCards();
+            populateCategories();
+            renderCatalog();
+        }
+
+        function loadSampleData() {
+            allProducts = JSON.parse(JSON.stringify([
+                { id: "DA003", groupCode: "DA-CUTTER", name: "កន្ត្រៃកាត់ដែក 断线剪 450mm-18\"", size: "450mm-18\"", price: 7.00, vipPrice: 5.60, vip1Price: 5.04, category: "ប្រដាប់ប្រដាជាង", photo: "https://i.ibb.co/b5wgD5W/BE-P3006.jpg" },
+                { id: "DA004", groupCode: "DA-CUTTER", name: "កន្ត្រៃកាត់ដែក 断线剪 600mm-24\"", size: "600mm-24\"", price: 9.00, vipPrice: 7.20, vip1Price: 6.48, category: "ប្រដាប់ប្រដាជាង", photo: "https://i.ibb.co/b5wgD5W/BE-P3006.jpg" },
+                { id: "BE610207", groupCode: "BE-DRILL-21V", name: "ម៉ូទ័រស្វានកាតប្រហោងថ្ម 锂电扳手 (21V / 1000N.M)", size: "6.0Ah", price: 108.00, vipPrice: 85.00, vip1Price: 76.50, category: "ម៉ូទ័រ BESTIR 机器", photo: "https://i.ibb.co/r2WkJGb6/BE610207.jpg" }
+            ]));
             buildGroupedProductCards();
             populateCategories();
             renderCatalog();
@@ -990,11 +1004,14 @@
                                 ${card.items.map(item => {
                                     const saleStr = `$${item.price.toFixed(2)}`;
                                     const vipStr = `$${item.vipPrice.toFixed(2)}`;
+                                    const vip1Str = `$${item.vip1Price.toFixed(2)}`;
                                     let priceCell = '';
                                     if (priceType === 'sale') {
                                         priceCell = `<td class="text-right font-bold text-red-600 text-xl p-2">${saleStr}</td>`;
                                     } else if (priceType === 'vip') {
                                         priceCell = `<td class="text-right font-bold text-emerald-600 text-xl p-2">${vipStr}</td>`;
+                                    } else if (priceType === 'vip1') {
+                                        priceCell = `<td class="text-right font-bold text-purple-600 text-xl p-2">${vip1Str}</td>`;
                                     } else if (priceType === 'both') {
                                         priceCell = `
                                             <td class="text-right p-2">
@@ -1019,12 +1036,15 @@
                 const single = card.items[0];
                 const salePriceVal = single.price ? `$${single.price.toFixed(2)}` : '$0.00';
                 const vipPriceVal = single.vipPrice ? `$${single.vipPrice.toFixed(2)}` : salePriceVal;
+                const vip1PriceVal = single.vip1Price ? `$${single.vip1Price.toFixed(2)}` : salePriceVal;
 
                 let priceDisplay = '';
                 if (priceType === 'sale') {
                     priceDisplay = `<span class="text-red-600 font-black text-3xl md:text-4xl">${salePriceVal}</span>`;
                 } else if (priceType === 'vip') {
                     priceDisplay = `<span class="text-emerald-600 font-black text-3xl md:text-4xl">${vipPriceVal}</span>`;
+                } else if (priceType === 'vip1') {
+                    priceDisplay = `<span class="text-purple-600 font-black text-3xl md:text-4xl">${vip1PriceVal}</span>`;
                 } else if (priceType === 'both') {
                     priceDisplay = `
                         <div class="text-right leading-tight">
@@ -1090,7 +1110,7 @@
                 </div>
 
                 <div class="border-t border-slate-200 pt-1.5 mt-1 flex justify-between items-center text-[9px] text-slate-400 flex-shrink-0">
-                    <span>DADING SHOP Catalog System</span>
+                    <span>DADING SHOP Catalog System (A5 Format)</span>
                     <span>ថ្ងៃបោះពុម្ព៖ ${new Date().toLocaleDateString('km-KH')}</span>
                 </div>
             `;
@@ -1115,12 +1135,15 @@
                                 ${card.items.map(item => {
                                     const saleStr = `$${item.price.toFixed(2)}`;
                                     const vipStr = `$${item.vipPrice.toFixed(2)}`;
+                                    const vip1Str = `$${item.vip1Price.toFixed(2)}`;
                                     let priceCell = '';
                                     
                                     if (priceType === 'sale') {
                                         priceCell = `<td class="text-right whitespace-nowrap pl-1"><span class="font-bold text-red-600 text-xs">${saleStr}</span></td>`;
                                     } else if (priceType === 'vip') {
                                         priceCell = `<td class="text-right whitespace-nowrap pl-1"><span class="font-bold text-emerald-600 text-xs">${vipStr}</span></td>`;
+                                    } else if (priceType === 'vip1') {
+                                        priceCell = `<td class="text-right whitespace-nowrap pl-1"><span class="font-bold text-purple-600 text-xs">${vip1Str}</span></td>`;
                                     } else if (priceType === 'both') {
                                         priceCell = `<td class="text-right whitespace-nowrap pl-1"><span class="text-[9px] text-slate-400 line-through mr-0.5">${saleStr}</span><span class="font-bold text-red-600 text-xs">${vipStr}</span></td>`;
                                     }
@@ -1141,12 +1164,15 @@
                 const single = card.items[0];
                 const salePriceVal = single.price ? `$${single.price.toFixed(2)}` : '$0.00';
                 const vipPriceVal = single.vipPrice ? `$${single.vipPrice.toFixed(2)}` : salePriceVal;
+                const vip1PriceVal = single.vip1Price ? `$${single.vip1Price.toFixed(2)}` : salePriceVal;
 
                 let priceDisplay = '';
                 if (priceType === 'sale') {
                     priceDisplay = `<span class="text-red-600 font-extrabold text-base md:text-lg">${salePriceVal}</span>`;
                 } else if (priceType === 'vip') {
                     priceDisplay = `<span class="text-emerald-600 font-extrabold text-base md:text-lg">${vipPriceVal}</span>`;
+                } else if (priceType === 'vip1') {
+                    priceDisplay = `<span class="text-purple-600 font-extrabold text-base md:text-lg">${vip1PriceVal}</span>`;
                 } else if (priceType === 'both') {
                     priceDisplay = `
                         <div class="text-right leading-none">
