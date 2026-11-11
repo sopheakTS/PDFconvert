@@ -131,8 +131,8 @@
         }
 
         .variant-table-container {
-            max-height: 95px;
-            overflow-y: auto;
+            max-height: none;
+            overflow-y: visible;
             border: 1px solid #e2e8f0;
             border-radius: 0.375rem;
             background-color: #f8fafc;
@@ -141,12 +141,12 @@
         .variant-table-container table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 10px;
+            font-size: 9.5px;
             table-layout: auto;
         }
 
         .variant-table-container td {
-            padding: 2px 4px;
+            padding: 1.5px 3px;
             border-bottom: 1px dashed #e2e8f0;
             color: #1e293b;
         }
@@ -1132,19 +1132,19 @@
                                     let priceCell = '';
                                     
                                     if (priceType === 'sale') {
-                                        priceCell = `<td class="text-right whitespace-nowrap pl-1 py-1.5"><span class="font-bold text-red-600 text-xs">${saleStr}</span></td>`;
+                                        priceCell = `<td class="text-right whitespace-nowrap pl-1 py-1"><span class="font-bold text-red-600 text-xs">${saleStr}</span></td>`;
                                     } else if (priceType === 'vip') {
-                                        priceCell = `<td class="text-right whitespace-nowrap pl-1 py-1.5"><span class="font-bold text-emerald-600 text-xs">${vipStr}</span></td>`;
+                                        priceCell = `<td class="text-right whitespace-nowrap pl-1 py-1"><span class="font-bold text-emerald-600 text-xs">${vipStr}</span></td>`;
                                     } else if (priceType === 'vip1') {
-                                        priceCell = `<td class="text-right whitespace-nowrap pl-1 py-1.5"><span class="font-bold text-purple-600 text-xs">${vip1Str}</span></td>`;
+                                        priceCell = `<td class="text-right whitespace-nowrap pl-1 py-1"><span class="font-bold text-purple-600 text-xs">${vip1Str}</span></td>`;
                                     } else if (priceType === 'both') {
-                                        priceCell = `<td class="text-right whitespace-nowrap pl-1 py-1.5"><span class="text-[9px] text-slate-400 line-through mr-0.5">${saleStr}</span><span class="font-bold text-red-600 text-xs">${vipStr}</span></td>`;
+                                        priceCell = `<td class="text-right whitespace-nowrap pl-1 py-1"><span class="text-[9px] text-slate-400 line-through mr-0.5">${saleStr}</span><span class="font-bold text-red-600 text-xs">${vipStr}</span></td>`;
                                     }
 
                                     return `
                                         <tr class="border-b border-slate-200/60 last:border-0">
-                                            <td class="font-mono font-black text-red-600 whitespace-nowrap pr-1.5 text-base w-[30%] py-1.5">${escapeHtml(item.id)}</td>
-                                            <td class="text-slate-800 font-bold text-base leading-snug py-1.5" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</td>
+                                            <td class="font-mono font-black text-red-600 whitespace-nowrap pr-1 text-sm w-[30%] py-1">${escapeHtml(item.id)}</td>
+                                            <td class="text-slate-800 font-bold text-sm leading-snug py-1" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</td>
                                             ${showPriceCol ? priceCell : ''}
                                         </tr>
                                     `;
