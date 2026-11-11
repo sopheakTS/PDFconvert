@@ -991,15 +991,8 @@
             if (isMultiVariant) {
                 const showPriceCol = priceType !== 'none';
                 variantsHTML = `
-                    <div class="overflow-y-auto max-h-[110px] border-2 border-slate-300 rounded-xl bg-slate-50 p-2">
+                    <div class="overflow-y-auto max-h-[130px] border-2 border-slate-300 rounded-xl bg-slate-50 p-2">
                         <table class="w-full border-collapse text-sm">
-                            <thead>
-                                <tr class="border-b-2 border-slate-300">
-                                    <th class="text-left font-black text-red-600 p-1.5 text-base">លេខកូដ ID</th>
-                                    <th class="text-left font-black text-slate-900 p-1.5 text-base">ឈ្មោះ / Description</th>
-                                    ${showPriceCol ? '<th class="text-right font-black text-slate-900 p-1.5 text-base">តម្លៃ (USD)</th>' : ''}
-                                </tr>
-                            </thead>
                             <tbody>
                                 ${card.items.map(item => {
                                     const saleStr = `$${item.price.toFixed(2)}`;
