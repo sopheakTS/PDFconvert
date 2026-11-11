@@ -131,7 +131,7 @@
         }
 
         .variant-table-container {
-            max-height: 95px;
+            max-height: 100px;
             overflow-y: auto;
             border: 1px solid #e2e8f0;
             border-radius: 0.375rem;
@@ -308,13 +308,13 @@
                 <div class="flex items-center justify-between">
                     <label for="groupModeToggle" class="font-bold text-red-900 text-xs flex items-center gap-2 cursor-pointer">
                         <i class="fa-solid fa-object-group text-red-600 text-sm"></i>
-                        <span>ផ្គុំតាម Group Code (អតិបរមា ៣ ប្រភេទ/កាត)</span>
+                        <span>ផ្គុំតាម Group Code (អតិបរមា ៦ ប្រភេទ/កាត)</span>
                     </label>
                     <input type="checkbox" id="groupModeToggle" checked onchange="toggleGroupMode()" 
                            class="w-4 h-4 text-red-600 rounded border-red-300 focus:ring-red-500 cursor-pointer">
                 </div>
                 <p class="text-[11px] text-slate-600 leading-tight">
-                    បើក៖ ផ្គុំផលិតផលដែលមាន Group Code (បែងចែកយ៉ាងច្រើន ៣ ក្នុង១កាត)។
+                    បើក៖ ផ្គុំផលិតផលដែលមាន Group Code (បែងចែកយ៉ាងច្រើន ៦ ក្នុង១កាត)។
                 </p>
                 <div id="groupStatsBadge" class="text-[10px] font-medium text-red-700 bg-white/80 px-2 py-1 rounded border border-red-200 inline-block">
                     ចំនួនក្រុម៖ <span id="groupCountText" class="font-bold">0</span> ក្រុម (<span id="totalItemsText">0</span> មុខទំនិញ)
@@ -755,8 +755,8 @@
                         }
                     }
 
-                    // Auto-split large groups so max 3 items per card
-                    const MAX_PER_CARD = 3;
+                    // Auto-split large groups so max 6 items per card to allow up to 6 items comfortably
+                    const MAX_PER_CARD = 6;
                     if (card.items.length > MAX_PER_CARD) {
                         for (let i = 0; i < card.items.length; i += MAX_PER_CARD) {
                             const chunk = card.items.slice(i, i + MAX_PER_CARD);
@@ -992,12 +992,12 @@
                 const showPriceCol = priceType !== 'none';
                 variantsHTML = `
                     <div class="overflow-y-auto max-h-[160px] border-2 border-slate-300 rounded-xl bg-slate-50 p-2">
-                        <table class="w-full border-collapse text-sm">
+                        <table class="w-full border-collapse text-xs md:text-sm">
                             <thead>
                                 <tr class="border-b-2 border-slate-300">
-                                    <th class="text-left font-black text-red-600 p-2 text-xl">លេខកូដ ID</th>
-                                    <th class="text-left font-black text-slate-900 p-2 text-xl">ឈ្មោះ / Description</th>
-                                    ${showPriceCol ? '<th class="text-right font-black text-slate-900 p-2 text-xl">តម្លៃ (USD)</th>' : ''}
+                                    <th class="text-left font-black text-red-600 p-1.5 text-base">លេខកូដ ID</th>
+                                    <th class="text-left font-black text-slate-900 p-1.5 text-base">ឈ្មោះ / Description</th>
+                                    ${showPriceCol ? '<th class="text-right font-black text-slate-900 p-1.5 text-base">តម្លៃ (USD)</th>' : ''}
                                 </tr>
                             </thead>
                             <tbody>
@@ -1007,23 +1007,23 @@
                                     const vip1Str = `$${item.vip1Price.toFixed(2)}`;
                                     let priceCell = '';
                                     if (priceType === 'sale') {
-                                        priceCell = `<td class="text-right font-bold text-red-600 text-xl p-2">${saleStr}</td>`;
+                                        priceCell = `<td class="text-right font-bold text-red-600 text-base p-1.5">${saleStr}</td>`;
                                     } else if (priceType === 'vip') {
-                                        priceCell = `<td class="text-right font-bold text-emerald-600 text-xl p-2">${vipStr}</td>`;
+                                        priceCell = `<td class="text-right font-bold text-emerald-600 text-base p-1.5">${vipStr}</td>`;
                                     } else if (priceType === 'vip1') {
-                                        priceCell = `<td class="text-right font-bold text-purple-600 text-xl p-2">${vip1Str}</td>`;
+                                        priceCell = `<td class="text-right font-bold text-purple-600 text-base p-1.5">${vip1Str}</td>`;
                                     } else if (priceType === 'both') {
                                         priceCell = `
-                                            <td class="text-right p-2">
-                                                <span class="text-base text-slate-400 line-through mr-2">${saleStr}</span>
-                                                <span class="font-black text-red-600 text-2xl">${vipStr}</span>
+                                            <td class="text-right p-1.5">
+                                                <span class="text-xs text-slate-400 line-through mr-1.5">${saleStr}</span>
+                                                <span class="font-black text-red-600 text-lg">${vipStr}</span>
                                             </td>
                                         `;
                                     }
                                     return `
                                         <tr class="border-b border-slate-200/80 last:border-0">
-                                            <td class="font-mono font-black text-red-600 text-2xl p-2 whitespace-nowrap">${escapeHtml(item.id)}</td>
-                                            <td class="font-bold text-slate-900 text-lg p-2">${escapeHtml(item.name)} ${item.size ? `<span class="text-base text-slate-600 font-semibold">(${escapeHtml(item.size)})</span>` : ''}</td>
+                                            <td class="font-mono font-black text-red-600 text-base p-1.5 whitespace-nowrap">${escapeHtml(item.id)}</td>
+                                            <td class="font-bold text-slate-900 text-sm p-1.5">${escapeHtml(item.name)} ${item.size ? `<span class="text-xs text-slate-600 font-semibold">(${escapeHtml(item.size)})</span>` : ''}</td>
                                             ${showPriceCol ? priceCell : ''}
                                         </tr>
                                     `;
@@ -1110,7 +1110,7 @@
                 </div>
 
                 <div class="border-t border-slate-200 pt-1.5 mt-1 flex justify-between items-center text-[9px] text-slate-400 flex-shrink-0">
-                    <span>DADING SHOP Catalog System (A5 Format)</span>
+                    <span>DADING SHOP Catalog System</span>
                     <span>ថ្ងៃបោះពុម្ព៖ ${new Date().toLocaleDateString('km-KH')}</span>
                 </div>
             `;
@@ -1150,8 +1150,8 @@
 
                                     return `
                                         <tr>
-                                            <td class="font-mono font-black text-red-600 whitespace-nowrap pr-1.5 text-base w-[30%]">${escapeHtml(item.id)}</td>
-                                            <td class="text-slate-800 font-bold text-base leading-snug py-1" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</td>
+                                            <td class="font-mono font-black text-red-600 whitespace-nowrap pr-1.5 text-sm w-[30%]">${escapeHtml(item.id)}</td>
+                                            <td class="text-slate-800 font-bold text-sm leading-snug py-0.5" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</td>
                                             ${showPriceCol ? priceCell : ''}
                                         </tr>
                                     `;
