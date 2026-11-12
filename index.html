@@ -877,7 +877,7 @@
             } else {
                 selectedGroupIds.add(cardId);
             }
-            updateBadgeCounts();
+            renderCatalog(); // Call renderCatalog so un-checked cards disappear immediately
         }
 
         function selectAll(shouldSelect) {
