@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DADING SHOP Catalog Generator (A5 & A4)</title>
+    <title>DADING SHOP Catalog</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -131,8 +131,8 @@
         }
 
         .variant-table-container {
-            max-height: none;
-            overflow-y: visible;
+            max-height: 95px;
+            overflow-y: auto;
             border: 1px solid #e2e8f0;
             border-radius: 0.375rem;
             background-color: #f8fafc;
@@ -141,12 +141,12 @@
         .variant-table-container table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 9.5px;
+            font-size: 10px;
             table-layout: auto;
         }
 
         .variant-table-container td {
-            padding: 1.5px 3px;
+            padding: 2px 4px;
             border-bottom: 1px dashed #e2e8f0;
             color: #1e293b;
         }
@@ -239,8 +239,8 @@
                     D
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg leading-tight tracking-wide">DADING SHOP Catalog Generator</h1>
-                    <p class="text-xs text-slate-400">ប្រព័ន្ធបង្កើតកាតាឡុក (A5 & A4)</p>
+                    <h1 class="font-bold text-lg leading-tight tracking-wide">DADING SHOP Catalog </h1>
+                    <p class="text-xs text-slate-400">ប្រព័ន្ធបង្កើតកាតាឡុក</p>
                 </div>
             </div>
 
@@ -308,13 +308,13 @@
                 <div class="flex items-center justify-between">
                     <label for="groupModeToggle" class="font-bold text-red-900 text-xs flex items-center gap-2 cursor-pointer">
                         <i class="fa-solid fa-object-group text-red-600 text-sm"></i>
-                        <span>ផ្គុំតាម Group Code (អតិបរមា ២ ប្រភេទ/កាត)</span>
+                        <span>ផ្គុំតាម Group Code (អតិបរមា ៣ ប្រភេទ/កាត)</span>
                     </label>
                     <input type="checkbox" id="groupModeToggle" checked onchange="toggleGroupMode()" 
                            class="w-4 h-4 text-red-600 rounded border-red-300 focus:ring-red-500 cursor-pointer">
                 </div>
                 <p class="text-[11px] text-slate-600 leading-tight">
-                    បើក៖ ផ្គុំផលិតផលដែលមាន Group Code (បែងចែកយ៉ាងច្រើន ២ ក្នុង១កាត)។
+                    បើក៖ ផ្គុំផលិតផលដែលមាន Group Code (បែងចែកយ៉ាងច្រើន ៣ ក្នុង១កាត)។
                 </p>
                 <div id="groupStatsBadge" class="text-[10px] font-medium text-red-700 bg-white/80 px-2 py-1 rounded border border-red-200 inline-block">
                     ចំនួនក្រុម៖ <span id="groupCountText" class="font-bold">0</span> ក្រុម (<span id="totalItemsText">0</span> មុខទំនិញ)
@@ -631,6 +631,9 @@
             processImportedJSON(jsonRows);
         }
 
+        // ==========================================
+        // ផ្នែកដែលបានកែប្រែសម្រាប់ចាប់យក ២ ភាសា (ខ្មែរ/ចិន)
+        // ==========================================
         function processImportedJSON(rows) {
             if (!rows || rows.length === 0) {
                 showStatus('គ្មានទិន្នន័យក្នុង Sheet នេះទេ!', 'error');
@@ -641,20 +644,23 @@
                 const keys = Object.keys(r);
                 const findKey = (keywords) => {
                     return keys.find(k => {
-                        const cleanKey = String(k).toLowerCase().trim().replace(/[^a-z0-9ខ្មែរ]/g, '');
+                        const cleanKey = String(k).toLowerCase().trim().replace(/[^a-z0-9ខ្មែរ%]/g, '');
                         return keywords.some(kw => cleanKey.includes(kw.toLowerCase()));
                     });
                 };
 
-                const nameKey = findKey(['name', 'ឈ្មោះ', 'title', 'product']) || keys[0];
-                const codeKey = findKey(['code', 'id', 'sku', 'លេខកូដ']) || keys[1];
-                const sizeKey = findKey(['variant', 'size', 'ទំហំ', 'spec']) || keys[2];
-                const priceKey = findKey(['saleprice', 'sale price', 'price', 'តម្លៃលក់', 'តម្លៃ']) || keys[3];
-                const vipKey = findKey(['vipprice', 'vip price', 'vip', 'តម្លៃvip']) || keys[4];
-                const vip1Key = findKey(['vip1', 'vip 1', 'តម្លៃពិសេស', 'តម្លៃvip1']) || keys[9] || keys[10]; // Column J (VIP1)
-                const categoryKey = findKey(['category', 'ប្រភេទទំនិញ', 'ប្រភេទ']) || keys[5];
-                const photoKey = findKey(['linkphoto', 'photo', 'image', 'img', 'picture', 'រូបភាព']) || keys.find(k => String(r[k]).startsWith('http'));
-                const groupCodeKey = findKey(['groupcode', 'group code', 'group_code', 'group', 'កូដក្រុម']) || keys.find(k => String(k).toLowerCase().includes('group'));
+                // ចាប់យកជួរឈរថ្មីតាមឈ្មោះដែលបានកែ
+                const khNameKey = findKey(['khname', 'ឈ្មោះ', 'namekh']) || keys[0];
+                const cnNameKey = findKey(['cnname', 'namecn']) || keys[1];
+                const codeKey = findKey(['code', 'id', 'sku', 'លេខកូដ']) || keys[2];
+                const groupCodeKey = findKey(['groupcode', 'group']) || keys[3];
+                const sizeKey = findKey(['variant', 'size', 'ទំហំ', 'spec']) || keys[4];
+                const priceKey = findKey(['saleprice', 'sale', 'តម្លៃលក់', 'តម្លៃ']) || keys[5];
+                const vipKey = findKey(['vipprice', 'vip']) || keys[6];
+                const vip1Key = findKey(['vip10%', 'vip1', 'តម្លៃពិសេស']) || keys[7]; 
+                const catKHKey = findKey(['categorykh', 'ប្រភេទទំនិញ', 'ប្រភេទ']) || keys[9];
+                const catCNKey = findKey(['categorycn']) || keys[10];
+                const photoKey = findKey(['linkphoto', 'photo', 'image', 'រូបភាព']) || keys.find(k => String(r[k]).startsWith('http'));
 
                 const cleanPrice = (val) => {
                     if (typeof val === 'number') return val;
@@ -662,19 +668,42 @@
                     return parseFloat(String(val).replace(/[^0-9.]/g, '')) || 0;
                 };
 
-                const rawPhoto = photoKey ? String(r[photoKey] || '') : '';
-                const rawGroupCode = groupCodeKey ? String(r[groupCodeKey] || '').trim() : '';
+                let idVal = String(r[codeKey] || `PROD-${i+1}`).trim();
+
+                // បញ្ចូលឈ្មោះ ខ្មែរ និង ចិន
+                let khName = khNameKey ? String(r[khNameKey] || '').trim() : '';
+                let cnName = cnNameKey ? String(r[cnNameKey] || '').trim() : '';
+                
+                // លុបទិន្នន័យក្នុងវង់ក្រចក () ដែលស្ទួនគ្នា (យកតែ១ជាគោល ដូចដែលលោកអ្នកចង់បាន)
+                if (khName.includes('(') && cnName.includes('(')) {
+                    cnName = cnName.replace(/\s*\(.*?\)\s*/g, ' ').trim();
+                }
+
+                // បញ្ចូលឈ្មោះ ខ្មែរ និង ចិន
+                let fullName = [khName, cnName].filter(Boolean).join(' ').replace(/\s+/g, ' ');
+
+                // ការពារកុំឱ្យលេខកូដ (ID) លោតចូលជាប់ជាមួយឈ្មោះ (លុបវាចេញពីឈ្មោះបើមានជាប់)
+                if (idVal && idVal.length > 2) {
+                    const safeId = idVal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    // ស្វែងរកលេខកូដនៅចុងឈ្មោះ (ទោះមានចុះបន្ទាត់ក៏ដោយ) រួចលុបវាចេញ
+                    const idRegex = new RegExp(`\\s*${safeId}\\s*$`, 'i');
+                    fullName = fullName.replace(idRegex, '').trim();
+                }
+
+                // បញ្ចូល Category (យកតែ Category ខ្មែរមួយជាគោល ដើម្បីកុំឲ្យវ៉ល់)
+                const khCat = catKHKey ? String(r[catKHKey] || '').trim() : '';
+                const fullCat = khCat || 'ផ្សេងៗ';
 
                 return {
-                    id: String(r[codeKey] || `PROD-${i+1}`).trim(),
-                    groupCode: rawGroupCode,
-                    name: String(r[nameKey] || 'គ្មានឈ្មោះ').trim(),
-                    size: String(r[sizeKey] || '').trim(),
+                    id: idVal,
+                    groupCode: groupCodeKey ? String(r[groupCodeKey] || '').trim() : '',
+                    name: fullName || 'គ្មានឈ្មោះ',
+                    size: sizeKey ? String(r[sizeKey] || '').trim() : '',
                     price: cleanPrice(r[priceKey]),
                     vipPrice: cleanPrice(r[vipKey]),
                     vip1Price: cleanPrice(r[vip1Key]),
-                    category: String(r[categoryKey] || 'ផ្សេងៗ').trim(),
-                    photo: sanitizeImageUrl(rawPhoto)
+                    category: fullCat,
+                    photo: photoKey ? sanitizeImageUrl(r[photoKey] ? String(r[photoKey]) : '') : ''
                 };
             }).filter(p => p.name !== 'គ្មានឈ្មោះ');
 
@@ -755,8 +784,8 @@
                         }
                     }
 
-                    // Auto-split large groups so max 2 items per card to prevent overflowing
-                    const MAX_PER_CARD = 2;
+                    // Auto-split large groups so max 3 items per card
+                    const MAX_PER_CARD = 3;
                     if (card.items.length > MAX_PER_CARD) {
                         for (let i = 0; i < card.items.length; i += MAX_PER_CARD) {
                             const chunk = card.items.slice(i, i + MAX_PER_CARD);
@@ -877,7 +906,7 @@
             } else {
                 selectedGroupIds.add(cardId);
             }
-            renderCatalog(); // Call renderCatalog so un-checked cards disappear immediately
+            updateBadgeCounts();
         }
 
         function selectAll(shouldSelect) {
@@ -971,7 +1000,7 @@
                         </div>
 
                         <div class="border-t border-slate-200 pt-1.5 mt-1 flex justify-between items-center text-[9px] text-slate-400 flex-shrink-0">
-                            <span>DADING SHOP Catalog System</span>
+                            <span>DADING SHOP Catalog </span>
                             <span>ថ្ងៃបោះពុម្ព៖ ${new Date().toLocaleDateString('km-KH')}</span>
                         </div>
                     `;
@@ -991,8 +1020,15 @@
             if (isMultiVariant) {
                 const showPriceCol = priceType !== 'none';
                 variantsHTML = `
-                    <div class="overflow-y-auto max-h-[130px] border-2 border-slate-300 rounded-xl bg-slate-50 p-2">
+                    <div class="overflow-y-auto max-h-[160px] border-2 border-slate-300 rounded-xl bg-slate-50 p-2">
                         <table class="w-full border-collapse text-sm">
+                            <thead>
+                                <tr class="border-b-2 border-slate-300">
+                                    <th class="text-left font-black text-red-600 p-2 text-xl">លេខកូដ ID</th>
+                                    <th class="text-left font-black text-slate-900 p-2 text-xl">ឈ្មោះ / Description</th>
+                                    ${showPriceCol ? '<th class="text-right font-black text-slate-900 p-2 text-xl">តម្លៃ (USD)</th>' : ''}
+                                </tr>
+                            </thead>
                             <tbody>
                                 ${card.items.map(item => {
                                     const saleStr = `$${item.price.toFixed(2)}`;
@@ -1000,23 +1036,23 @@
                                     const vip1Str = `$${item.vip1Price.toFixed(2)}`;
                                     let priceCell = '';
                                     if (priceType === 'sale') {
-                                        priceCell = `<td class="text-right font-bold text-red-600 text-base p-1.5">${saleStr}</td>`;
+                                        priceCell = `<td class="text-right font-bold text-red-600 text-xl p-2">${saleStr}</td>`;
                                     } else if (priceType === 'vip') {
-                                        priceCell = `<td class="text-right font-bold text-emerald-600 text-base p-1.5">${vipStr}</td>`;
+                                        priceCell = `<td class="text-right font-bold text-emerald-600 text-xl p-2">${vipStr}</td>`;
                                     } else if (priceType === 'vip1') {
-                                        priceCell = `<td class="text-right font-bold text-purple-600 text-base p-1.5">${vip1Str}</td>`;
+                                        priceCell = `<td class="text-right font-bold text-purple-600 text-xl p-2">${vip1Str}</td>`;
                                     } else if (priceType === 'both') {
                                         priceCell = `
-                                            <td class="text-right p-1.5">
-                                                <span class="text-xs text-slate-400 line-through mr-1.5">${saleStr}</span>
-                                                <span class="font-black text-red-600 text-lg">${vipStr}</span>
+                                            <td class="text-right p-2">
+                                                <span class="text-base text-slate-400 line-through mr-2">${saleStr}</span>
+                                                <span class="font-black text-red-600 text-2xl">${vipStr}</span>
                                             </td>
                                         `;
                                     }
                                     return `
                                         <tr class="border-b border-slate-200/80 last:border-0">
-                                            <td class="font-mono font-black text-red-600 text-lg p-1.5 whitespace-nowrap">${escapeHtml(item.id)}</td>
-                                            <td class="font-bold text-slate-900 text-sm p-1.5">${escapeHtml(item.name)} ${item.size ? `<span class="text-xs text-slate-600 font-semibold">(${escapeHtml(item.size)})</span>` : ''}</td>
+                                            <td class="font-mono font-black text-red-600 text-2xl p-2 whitespace-nowrap">${escapeHtml(item.id)}</td>
+                                            <td class="font-bold text-slate-900 text-lg p-2">${escapeHtml(item.name)} ${item.size ? `<span class="text-base text-slate-600 font-semibold">(${escapeHtml(item.size)})</span>` : ''}</td>
                                             ${showPriceCol ? priceCell : ''}
                                         </tr>
                                     `;
@@ -1103,7 +1139,7 @@
                 </div>
 
                 <div class="border-t border-slate-200 pt-1.5 mt-1 flex justify-between items-center text-[9px] text-slate-400 flex-shrink-0">
-                    <span>DADING SHOP Catalog System</span>
+                    <span>DADING SHOP Catalog System </span>
                     <span>ថ្ងៃបោះពុម្ព៖ ${new Date().toLocaleDateString('km-KH')}</span>
                 </div>
             `;
@@ -1122,7 +1158,7 @@
                 const showPriceCol = priceType !== 'none';
 
                 variantsHTML = `
-                    <div class="variant-table-container variant-scroll my-1 px-0.5">
+                    <div class="variant-table-container variant-scroll my-1">
                         <table>
                             <tbody>
                                 ${card.items.map(item => {
@@ -1132,19 +1168,19 @@
                                     let priceCell = '';
                                     
                                     if (priceType === 'sale') {
-                                        priceCell = `<td class="text-right whitespace-nowrap pl-1 py-1"><span class="font-bold text-red-600 text-xs">${saleStr}</span></td>`;
+                                        priceCell = `<td class="text-right whitespace-nowrap pl-1"><span class="font-bold text-red-600 text-xs">${saleStr}</span></td>`;
                                     } else if (priceType === 'vip') {
-                                        priceCell = `<td class="text-right whitespace-nowrap pl-1 py-1"><span class="font-bold text-emerald-600 text-xs">${vipStr}</span></td>`;
+                                        priceCell = `<td class="text-right whitespace-nowrap pl-1"><span class="font-bold text-emerald-600 text-xs">${vipStr}</span></td>`;
                                     } else if (priceType === 'vip1') {
-                                        priceCell = `<td class="text-right whitespace-nowrap pl-1 py-1"><span class="font-bold text-purple-600 text-xs">${vip1Str}</span></td>`;
+                                        priceCell = `<td class="text-right whitespace-nowrap pl-1"><span class="font-bold text-purple-600 text-xs">${vip1Str}</span></td>`;
                                     } else if (priceType === 'both') {
-                                        priceCell = `<td class="text-right whitespace-nowrap pl-1 py-1"><span class="text-[9px] text-slate-400 line-through mr-0.5">${saleStr}</span><span class="font-bold text-red-600 text-xs">${vipStr}</span></td>`;
+                                        priceCell = `<td class="text-right whitespace-nowrap pl-1"><span class="text-[9px] text-slate-400 line-through mr-0.5">${saleStr}</span><span class="font-bold text-red-600 text-xs">${vipStr}</span></td>`;
                                     }
 
                                     return `
-                                        <tr class="border-b border-slate-200/60 last:border-0">
-                                            <td class="font-mono font-black text-red-600 whitespace-nowrap pr-1 text-sm w-[30%] py-1">${escapeHtml(item.id)}</td>
-                                            <td class="text-slate-800 font-bold text-sm leading-snug py-1" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</td>
+                                        <tr>
+                                            <td class="font-mono font-black text-red-600 whitespace-nowrap pr-1.5 text-base w-[30%]">${escapeHtml(item.id)}</td>
+                                            <td class="text-slate-800 font-bold text-base leading-snug py-1" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</td>
                                             ${showPriceCol ? priceCell : ''}
                                         </tr>
                                     `;
