@@ -546,6 +546,71 @@
             return cleanUrl;
         }
 
+        /**
+         * មុខងារផ្គុំឈ្មោះភាសាខ្មែរ និងភាសាចិន ដោយដកលេខ/ទំហំដែលដូចគ្នានៅខាងចុងចេញ ១
+         * ឧទាហរណ៍៖
+         *   "ផ្លែកាត់បៃតង (355 /2.8mm)" + "绿色锯片(355 /2.8mm)" => "ផ្លែកាត់បៃតង 绿色锯片 (355 /2.8mm)"
+         *   "ថ្មឡាស៊ែ 5V-2Ah" + "水平仪电池 5V-2Ah" => "ថ្មឡាស៊ែ 水平仪电池 5V-2Ah"
+         *   "ម៉ូទ័រផ្លុំកំដៅ (1800W)" + "热风枪（1800W）" => "ម៉ូទ័រផ្លុំកំដៅ 热风枪 (1800W)"
+         */
+        function mergeKhmerAndChineseName(khRaw, cnRaw) {
+            // បំប្លែងសញ្ញាវង់ក្រចកពេញទំហំ (Full-width) និងចន្លោះពិសេសឱ្យទៅជាធម្មតា
+            const normalizePunct = (str) => String(str || '')
+                .replace(/\u3000/g, ' ')
+                .replace(/（/g, '(')
+                .replace(/）/g, ')')
+                .replace(/[“”]/g, '"')
+                .replace(/[‘’]/g, "'")
+                .replace(/／/g, '/')
+                .replace(/－/g, '-')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            const kh = normalizePunct(khRaw);
+            const cn = normalizePunct(cnRaw);
+
+            if (!kh) return cn;
+            if (!cn) return kh;
+
+            // ដកចន្លោះ និងវង់ក្រចកក្រៅ ដើម្បីប្រៀបធៀបលេខ/ទំហំនៅខាងចុង
+            const normSpec = (s) => s.replace(/^[(]|[)]$/g, '').replace(/\s+/g, '').toLowerCase();
+
+            // ១. ករណីឈ្មោះទាំងពីរមានវង់ក្រចក (...) នៅខាងចុងដូចគ្នា
+            const parenRegex = /^(.*?)\s*(\([^()]+\))$/;
+            const khParenMatch = kh.match(parenRegex);
+            const cnParenMatch = cn.match(parenRegex);
+
+            if (khParenMatch && cnParenMatch) {
+                const khBase = khParenMatch[1].trim();
+                const khSpec = khParenMatch[2].trim();
+                const cnBase = cnParenMatch[1].trim();
+                const cnSpec = cnParenMatch[2].trim();
+
+                if (normSpec(khSpec) === normSpec(cnSpec)) {
+                    return [khBase, cnBase, khSpec].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+                }
+            }
+
+            // ២. ករណីឈ្មោះទាំងពីរមានលេខ ឬទំហំនៅខាងចុងដូចគ្នា (ឧ. 5V-2Ah, 16V, #40, 9", 1800W)
+            const trailingSpecRegex = /^(.*?)[\s]*((?:\([^()]+\))|(?:[#]?[0-9][A-Za-z0-9\s./\-+"'*×x%#]*))$/;
+            const khSpecMatch = kh.match(trailingSpecRegex);
+            const cnSpecMatch = cn.match(trailingSpecRegex);
+
+            if (khSpecMatch && cnSpecMatch) {
+                const khBase = khSpecMatch[1].trim();
+                const khSpec = khSpecMatch[2].trim();
+                const cnBase = cnSpecMatch[1].trim();
+                const cnSpec = cnSpecMatch[2].trim();
+
+                if (khBase && cnBase && normSpec(khSpec) === normSpec(cnSpec)) {
+                    return `${khBase} ${cnBase} ${khSpec}`.replace(/\s+/g, ' ').trim();
+                }
+            }
+
+            // ៣. ករណីធម្មតា (គ្មានលេខនៅចុងដូចគ្នា)
+            return `${kh} ${cn}`.replace(/\s+/g, ' ').trim();
+        }
+
         async function importFromGSheetLink(targetUrl) {
             const rawUrl = targetUrl || document.getElementById('gsheetUrlInputMain').value.trim();
             if (!rawUrl) {
@@ -632,7 +697,7 @@
         }
 
         // ==========================================
-        // ផ្នែកដែលបានកែប្រែសម្រាប់ចាប់យក ២ ភាសា (ខ្មែរ/ចិន)
+        // ផ្នែកចាប់យកទិន្នន័យ ២ ភាសា (ខ្មែរ/ចិន) និងផ្គុំលេខនៅខាងចុង
         // ==========================================
         function processImportedJSON(rows) {
             if (!rows || rows.length === 0) {
@@ -649,7 +714,7 @@
                     });
                 };
 
-                // ចាប់យកជួរឈរថ្មីតាមឈ្មោះដែលបានកែ
+                // ចាប់យកជួរឈរតាមឈ្មោះ
                 const khNameKey = findKey(['khname', 'ឈ្មោះ', 'namekh']) || keys[0];
                 const cnNameKey = findKey(['cnname', 'namecn']) || keys[1];
                 const codeKey = findKey(['code', 'id', 'sku', 'លេខកូដ']) || keys[2];
@@ -659,7 +724,6 @@
                 const vipKey = findKey(['vipprice', 'vip']) || keys[6];
                 const vip1Key = findKey(['vip10%', 'vip1', 'តម្លៃពិសេស']) || keys[7]; 
                 const catKHKey = findKey(['categorykh', 'ប្រភេទទំនិញ', 'ប្រភេទ']) || keys[9];
-                const catCNKey = findKey(['categorycn']) || keys[10];
                 const photoKey = findKey(['linkphoto', 'photo', 'image', 'រូបភាព']) || keys.find(k => String(r[k]).startsWith('http'));
 
                 const cleanPrice = (val) => {
@@ -670,27 +734,19 @@
 
                 let idVal = String(r[codeKey] || `PROD-${i+1}`).trim();
 
-                // បញ្ចូលឈ្មោះ ខ្មែរ និង ចិន
+                // ផ្គុំឈ្មោះ ខ្មែរ និង ចិន ដោយដកលេខ/ទំហំស្ទួននៅខាងចុងចេញ ១
                 let khName = khNameKey ? String(r[khNameKey] || '').trim() : '';
                 let cnName = cnNameKey ? String(r[cnNameKey] || '').trim() : '';
-                
-                // លុបទិន្នន័យក្នុងវង់ក្រចក () ដែលស្ទួនគ្នា (យកតែ១ជាគោល ដូចដែលលោកអ្នកចង់បាន)
-                if (khName.includes('(') && cnName.includes('(')) {
-                    cnName = cnName.replace(/\s*\(.*?\)\s*/g, ' ').trim();
-                }
+                let fullName = mergeKhmerAndChineseName(khName, cnName);
 
-                // បញ្ចូលឈ្មោះ ខ្មែរ និង ចិន
-                let fullName = [khName, cnName].filter(Boolean).join(' ').replace(/\s+/g, ' ');
-
-                // ការពារកុំឱ្យលេខកូដ (ID) លោតចូលជាប់ជាមួយឈ្មោះ (លុបវាចេញពីឈ្មោះបើមានជាប់)
+                // ការពារកុំឱ្យលេខកូដ (ID) លោតចូលជាប់ជាមួយឈ្មោះ
                 if (idVal && idVal.length > 2) {
                     const safeId = idVal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    // ស្វែងរកលេខកូដនៅចុងឈ្មោះ (ទោះមានចុះបន្ទាត់ក៏ដោយ) រួចលុបវាចេញ
                     const idRegex = new RegExp(`\\s*${safeId}\\s*$`, 'i');
                     fullName = fullName.replace(idRegex, '').trim();
                 }
 
-                // បញ្ចូល Category (យកតែ Category ខ្មែរមួយជាគោល ដើម្បីកុំឲ្យវ៉ល់)
+                // យក Category ខ្មែរជាគោល
                 const khCat = catKHKey ? String(r[catKHKey] || '').trim() : '';
                 const fullCat = khCat || 'ផ្សេងៗ';
 
@@ -900,13 +956,16 @@
             renderCatalog();
         }
 
+        /**
+         * ពេលដកសញ្ញាធីកលើកាតផលិតផល ដកវាចេញពីបញ្ជី និងបង្ហាញទំព័រឡើងវិញភ្លាមៗ
+         */
         function toggleSelectGroup(cardId) {
             if (selectedGroupIds.has(cardId)) {
                 selectedGroupIds.delete(cardId);
             } else {
                 selectedGroupIds.add(cardId);
             }
-            updateBadgeCounts();
+            renderCatalog();
         }
 
         function selectAll(shouldSelect) {
@@ -922,17 +981,17 @@
         }
 
         function updateBadgeCounts() {
-            const count = selectedGroupIds.size;
+            const filteredSelectedCount = getFilteredGroupCards().filter(c => selectedGroupIds.has(c.cardId)).length;
             const badgeEl = document.getElementById('selectedCountBadge');
             const summaryEl = document.getElementById('pageCountSummary');
 
-            if (badgeEl) badgeEl.innerText = `${count} បានជ្រើសរើស`;
+            if (badgeEl) badgeEl.innerText = `${filteredSelectedCount} បានជ្រើសរើស`;
             
             let totalPages = 0;
             if (currentLayoutMode === 'A5') {
-                totalPages = count;
+                totalPages = filteredSelectedCount;
             } else {
-                totalPages = Math.ceil(count / currentLayoutMode);
+                totalPages = Math.ceil(filteredSelectedCount / currentLayoutMode);
             }
             if (summaryEl) summaryEl.innerText = `${totalPages} ទំព័រ`;
         }
@@ -1010,10 +1069,15 @@
             }
         }
 
+        function escapeJsSingleQuote(str) {
+            return String(str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        }
+
         function renderA5SinglePageContent(card, priceType, shopTitle, shopContact, pageNum, totalPages) {
             const imageUrl = card.mainImage || 'https://placehold.co/600x500/ffffff/e2e8f0?text=No+Photo';
             const isMultiVariant = card.items.length > 1;
             const uniqueSizesForTop = [...new Set(card.items.map(i => i.size).filter(Boolean))].join(' | ');
+            const safeCardIdAttr = escapeHtml(escapeJsSingleQuote(card.cardId));
 
             let variantsHTML = '';
 
@@ -1113,7 +1177,8 @@
                 <div class="flex-grow flex flex-col justify-between relative bg-white border border-slate-200 rounded-xl p-3 my-1 overflow-hidden">
                     <div class="no-print absolute top-3 right-3 z-10 flex items-center gap-2 bg-white/95 px-3 py-1.5 rounded-lg border border-slate-300 shadow-sm">
                         ${uniqueSizesForTop ? `<span class="text-xs font-bold text-slate-700">${escapeHtml(uniqueSizesForTop)}</span>` : ''}
-                        <input type="checkbox" ${selectedGroupIds.has(card.cardId) ? 'checked' : ''} onchange="toggleSelectGroup('${escapeHtml(card.cardId)}')" 
+                        <input type="checkbox" ${selectedGroupIds.has(card.cardId) ? 'checked' : ''} onchange="toggleSelectGroup('${safeCardIdAttr}')" 
+                            title="ដកសញ្ញាធីកដើម្បីដកទំនិញនេះចេញពីកាតាឡុក"
                             class="w-4 h-4 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer block">
                     </div>
 
@@ -1148,6 +1213,7 @@
         function renderGroupProductCardA4(card, priceType) {
             const imageUrl = card.mainImage || 'https://placehold.co/400x350/ffffff/e2e8f0?text=No+Photo';
             const isMultiVariant = card.items.length > 1;
+            const safeCardIdAttr = escapeHtml(escapeJsSingleQuote(card.cardId));
 
             const uniqueSizes = [...new Set(card.items.map(i => i.size).filter(Boolean))];
             const sizeSummaryText = uniqueSizes.length > 0 ? uniqueSizes.join(' | ') : '';
@@ -1229,7 +1295,8 @@
                 <div class="product-card-a4 relative">
                     <div class="no-print absolute top-1.5 right-1.5 z-10 flex items-center gap-1.5 bg-white/95 px-2 py-1 rounded-md border border-slate-200 shadow-sm">
                         ${sizeSummaryText ? `<span class="text-[10px] font-bold text-slate-700">${escapeHtml(sizeSummaryText)}</span>` : ''}
-                        <input type="checkbox" ${selectedGroupIds.has(card.cardId) ? 'checked' : ''} onchange="toggleSelectGroup('${escapeHtml(card.cardId)}')" 
+                        <input type="checkbox" ${selectedGroupIds.has(card.cardId) ? 'checked' : ''} onchange="toggleSelectGroup('${safeCardIdAttr}')" 
+                            title="ដកសញ្ញាធីកដើម្បីដកទំនិញនេះចេញពីកាតាឡុក"
                             class="w-3.5 h-3.5 text-red-600 rounded border-slate-300 focus:ring-red-500 cursor-pointer block">
                     </div>
 
